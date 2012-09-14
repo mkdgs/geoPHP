@@ -11,25 +11,12 @@ abstract class Geometry
   protected $dimention = 2; // or dimension ?
   protected $measured = false;
   
-  // Abtract: Standard
+  // Abtract: Standard 
   // -----------------
-  abstract public function area();
+  abstract public function dimension();  
   abstract public function boundary();
-  abstract public function centroid();
-  abstract public function length();
-  abstract public function length3D();
-  abstract public function numGeometries();
-  abstract public function geometryN($n);
-  abstract public function startPoint();
-  abstract public function endPoint();
-  abstract public function isRing();            // Mssing dependancy
-  abstract public function isClosed();          // Missing dependancy
-  abstract public function numPoints();
-  abstract public function pointN($n);
-  abstract public function exteriorRing();
-  abstract public function numInteriorRings();
-  abstract public function interiorRingN($n);
-  abstract public function dimension();
+
+  
   abstract public function distance(Geometry $geom);
   abstract public function equals($geom);
   abstract public function isEmpty();
@@ -45,9 +32,35 @@ abstract class Geometry
   abstract public function haversineLength(); //degrees
   abstract public function flatten(); // 3D to 2D
 
+/* this methods are not shared on all geometry type
+ 
+  - we need Curve and Surface abstract class
+  
+  only for Geometry colection
+  abstract public function numGeometries();
+  abstract public function geometryN($n);
+  
+  
+  only for Surface --> Polygon
+  abstract public function exteriorRing();
+  abstract public function numInteriorRings();
+  abstract public function interiorRingN($n);
+  abstract public function centroid();
+  abstract public function area();
+  
+  
+  only for Curve --> Linestring
+  abstract public function length();
+  abstract public function length3D();
+  abstract public function startPoint();
+  abstract public function endPoint();
+  abstract public function isRing();            // Mssing dependancy
+  abstract public function isClosed(); 
+  abstract public function numPoints();
+  abstract public function pointN($n);    
+  
   
   // will be removed from here (this is for Point only)
-  // i made it non abstract because there is no difference
   public function x() {return null;}
   public function y() {return null;}
   public function z()	{return null;}
@@ -55,7 +68,7 @@ abstract class Geometry
   public function getX() {return null;}
   public function getY() {return null;}
 
-
+*/
   // Public: Standard -- Common to all geometries
   // --------------------------------------------
   public function SRID() {

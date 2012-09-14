@@ -134,10 +134,4 @@ class Polygon extends Collection
     }
     return TRUE;
   }
-
-  // Not valid for this geometry type
-  // --------------------------------
-  public function length()   { return NULL; }
-  public function length3D() { return NULL; }
-
 }

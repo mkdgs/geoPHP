@@ -14,8 +14,5 @@ class MultiPoint extends Collection
     return TRUE;
   }
 
-  // Not valid for this geometry type
-  // --------------------------------
-  public function explode() { return NULL; }
 }
 

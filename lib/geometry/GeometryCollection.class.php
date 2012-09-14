@@ -22,8 +22,4 @@ class GeometryCollection extends Collection
     return $array;
   }
   
-  // Not valid for this geomettry
-  public function boundary() { return NULL; }
-  public function isSimple() { return NULL; }
 }
-

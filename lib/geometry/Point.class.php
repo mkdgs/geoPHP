@@ -230,21 +230,7 @@ class Point extends Geometry
       return $distance;
     }
   }
-
-  // Not valid for this geometry type
-  public function numGeometries()    { return NULL; }
-  public function geometryN($n)      { return NULL; }
-  public function startPoint()       { return NULL; }
-  public function endPoint()         { return NULL; }
-  public function isRing()           { return NULL; }
-  public function isClosed()         { return NULL; }
-  public function pointN($n)         { return NULL; }
-  public function exteriorRing()     { return NULL; }
-  public function numInteriorRings() { return NULL; }
-  public function interiorRingN($n)  { return NULL; }
-  public function pointOnSurface()   { return NULL; }
-  public function explode()          { return NULL; }
-  
+ 
   // Public: Aliases
   // ---------------
   public function getX() {
