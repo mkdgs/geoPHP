@@ -27,7 +27,7 @@ abstract class Geometry
   abstract public function getBBox();
   abstract public function asArray();
   abstract public function getPoints();
-  abstract public function explode(); // Get all line segments
+ 
   abstract public function greatCircleLength(); //meters
   abstract public function haversineLength(); //degrees
   abstract public function flatten(); // 3D to 2D
@@ -58,6 +58,8 @@ abstract class Geometry
   abstract public function isClosed(); 
   abstract public function numPoints();
   abstract public function pointN($n);    
+  
+  abstract public function explode(); // Get all line segments (non standar?)
   
   
   // will be removed from here (this is for Point only)
