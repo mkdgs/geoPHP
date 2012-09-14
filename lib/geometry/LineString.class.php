@@ -48,7 +48,10 @@ class LineString extends Collection
   public function numPoints() {
     return $this->numGeometries();
   }
-
+  /**
+   * @param int $n
+   * @return Point
+   */
   public function pointN($n) {
     return $this->geometryN($n);
   }
