@@ -1,25 +1,29 @@
 <?php
 /*
  * Copyright (c) Patrick Hayes
-* Copyright (c) 2012 Desgranges Mickael
-* Copyright (c) 2012 BCBGeo http://bcbgeo.com
-*
-* This code is open-source and licenced under the Modified BSD License.
-* For the full copyright and license information, please view the LICENSE
-* file that was distributed with this source code.
-*/
+ * Copyright (c) 2012 Desgranges Mickael
+ * Copyright (c) 2012 BCBGeo http://bcbgeo.com
+ *
+ * This code is open-source and licenced under the Modified BSD License.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 /**
  * THIS CLASS IS NOT USABLE
  * 
+ * @todo add gml:id 
+ * 
  * 
  * PHP Geometry/Gml 3 encoder/decoder
  * http://www.opengeospatial.org/standards/gml
+ * 
+ * http://gis13.nsgc.gov.ns.ca/sns_webclient/WebHelp/GML_Input_Files.htm
+ * http://www.tridas.org/documents/xmldocs/1.2/tridas2.html#id60
  */
-class Gml extends GeoAdapter
-{
-	private $namespace 	= 'gml'; // Name-space string. eg 'gml'
-	private $srsname 	= 'EPSG:4326'; // @todo set the uri
+class GML extends GeoAdapter {
+	protected $namespace 	= 'gml'; // Name-space string. eg 'gml'
+	protected $srsname 		= 'EPSG:4326'; // @todo set the uri
 
 	/**
 	 * Read GeoGml string into geometry objects
@@ -195,58 +199,65 @@ class Gml extends GeoAdapter
 		// Load into DOMDOcument
 		libxml_use_internal_errors(true);
 		$xmlobj = new DOMDocument('1.0', 'UTF-8');
-		@$xmlobj->loadXML($xml);
-		
-			
 			
 		$type = strtolower($geom->getGeomType());
 		switch ($type) {
 			case 'point':
-				return $this->writePoint($geom, $xmlobj);
+				$this->writePoint($geom, $xmlobj);
 				break;
 			case 'linestring':
-				return $this->writeLineString($geom, $xmlobj);
+				$this->writeLineString($geom, $xmlobj);
 				break;
 			case 'polygon':
-				return $this->writePolygon($geom, $xmlobj);
+				$this->writePolygon($geom, $xmlobj);
 				break;
 			case 'multipoint':
+				$this->writeMultipoint($geom, $xmlobj);
+				break;
 			case 'multilinestring':
+				$this->writeMultiLineString($geom, $xmlobj);
+				break;
 			case 'multipolygon':
+				$this->writeMultiPolygon($geom, $xmlobj);
+				break;
 			case 'geometrycollection':
-				return $this->writeCollection($geom, $xmlobj);
+				$this->writeCollection($geom, $xmlobj);
 				break;
 		}
 		// add on first srsName=\"$this->srsname\"
 		// we need namespace, always
 		// $element = $xmlobj->createElement('shema');
 		// $element->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:gml', "http://www.opengis.net/gml");
-		return $xmlobj->saveXML();
+		return $xmlobj->saveXML($xmlobj);
 	}
-
-
+	
+	protected function ownerDocument(DOMNode $node) { 
+		if ( $node->ownerDocument ) return $node->ownerDocument;
+		return $node;
+	}
 	
 	// pos must be direct position (lat long for wsg84)
 	// http://portal.opengeospatial.org/files/?artifact_id=11606
 	protected function writePoint(Point $geom, DOMNode $node) {
-		$position = $geom->getX().' '. $geom->getY().( $geom->hasZ() ) ? ' '.$geom->z() : '';
-		$point = $node->ownerDocument->createElementNS($this->namespace, 'Point');			
-		$pos   = $node->ownerDocument->createElementNS($this->namespace, 'pos', $position);
+		$position = $geom->getX().' '. $geom->getY().(( $geom->hasZ() ) ? ' '.$geom->z() : '');
+		$point = $this->ownerDocument($node)->createElement($this->namespace. ':Point');			
+		$pos   = $this->ownerDocument($node)->createElement($this->namespace. ':pos');
+		$pos->nodeValue = $position;
 		$point->appendChild($pos);
 		$node->appendChild($point);
 		return $point;
 	}
 	
-	private function writeLineString(LineString $geom, DOMNode $node) {		
+	protected function writeLineString(LineString $geom, DOMNode $node) {		
 		$position = array();
 		foreach ($geom->getComponents() as $k => $point) {			
-			$position[] = $point->getX().' '. $point->getY().( $geom->hasZ() ) ? ' '.$point->z() : '';			
+			$position[] = $point->getX().' '. $point->getY().(( $geom->hasZ() ) ? ' '.$point->z() : '');			
 		}
-		$position = implode(',', $position);
+		$position = implode(',', $position); // @todo check poslist syntaxe im not sure, i think is bad
 		
-		$linestring  = $node->ownerDocument->createElementNS($this->namespace, 'LineString');
-		$poslist     = $node->ownerDocument->createElementNS($this->namespace, 'posList', $position);
-		$dimension   = $node->ownerDocument->createAttributeNS($this->namespace, 'srsDimension');
+		$linestring  = $this->ownerDocument($node)->createElement($this->namespace. ':LineString');
+		$poslist     = $this->ownerDocument($node)->createElement($this->namespace. ':posList', $position);
+		$dimension   = $this->ownerDocument($node)->createAttribute($this->namespace. ':srsDimension');
 		$dimension->value = ( $geom->hasZ() ) ? 3 : 2;
 		
 		$poslist->setAttributeNodeNS($dimension);
@@ -255,16 +266,16 @@ class Gml extends GeoAdapter
 		return $linestring;
 	}
 	
-	private function writeLinearRing(LineString $geom, DOMNode $node) {
+	protected function writeLinearRing(LineString $geom, DOMNode $node) {
 		$position = array();
 		foreach ($geom->getComponents() as $k => $point) {
 			$position[] = $point->getX().' '. $point->getY().( $geom->hasZ() ) ? ' '.$point->z() : '';
 		}
 		$position = implode(',', $position);
 	
-		$linestring  = $node->ownerDocument->createElementNS($this->namespace, 'LinearRing');
-		$poslist     = $node->ownerDocument->createElementNS($this->namespace, 'posList', $position);
-		$dimension   = $node->ownerDocument->createAttributeNS($this->namespace, 'srsDimension');
+		$linestring  = $this->ownerDocument($node)->createElement($this->namespace. ':LinearRing');
+		$poslist     = $this->ownerDocument($node)->createElement($this->namespace. ':posList', $position);
+		$dimension   = $this->ownerDocument($node)->createAttribute($this->namespace. ':srsDimension');
 		$dimension->value = ( $geom->hasZ() ) ? 3 : 2;
 	
 		$poslist->setAttributeNodeNS($dimension);
@@ -274,9 +285,9 @@ class Gml extends GeoAdapter
 	}
 
 	
-	private function writePolygon(Polygon $geom, DOMNode $node) {
-		$polygon   = $node->ownerDocument->createElementNS($this->namespace, 'polygon');
-		$exterior  = $node->ownerDocument->createElementNS($this->namespace, 'exterior');		
+	protected function writePolygon(Polygon $geom, DOMNode $node) {
+		$polygon   = $this->ownerDocument($node)->createElement($this->namespace. ':polygon');
+		$exterior  = $this->ownerDocument($node)->createElement($this->namespace. ':exterior');		
 		
 		$exterior_ring = $geom->exteriorRing();
 		if ( $exterior_ring->numPoints() ) {
@@ -286,7 +297,7 @@ class Gml extends GeoAdapter
 		$num_interior_rings = $geom->numInteriorRings();
 		if ( $num_interior_rings ) {			
 			for ( $i=0; $i<$num_interior_rings; $i++) {
-				$interior  = $node->ownerDocument->createElementNS($this->namespace, 'interior');
+				$interior  = $this->ownerDocument($node)->createElement($this->namespace. ':interior');
 				$polygon->appendChild($this->writeLinearRing($geom->interiorRingN($i), $interior));
 			}
 		}
@@ -294,10 +305,113 @@ class Gml extends GeoAdapter
 		return $polygon;
 	}
 	
-	private function writeMultipoint(MultiPoint $geom, DOMNode $node) {
-		$multipoint   = $node->ownerDocument->createElementNS($this->namespace, 'MultiPoint');
-		
+	protected function writeMultipoint(MultiPoint $geom, DOMNode $node) {
+		$multipoint   = $this->ownerDocument($node)->createElement($this->namespace. ':MultiPoint');			
+		$num_points = $geom->numGeometries();
+		if ( $num_points ) {
+			for ( $i=0; $i<$num_points; $i++) {
+				$pointMember   = $this->ownerDocument($node)->createElement($this->namespace. ':pointMember');
+				$multipoint->appendChild($this->writePoint($geom->geometryN($i), $pointMember));
+			}
+		}
+		return $multipoint;
 	}
+	
+	protected function writeMultiLineString(MultiLineString $geom, DOMNode $node) { 
+		$multicurve   = $this->ownerDocument($node)->createElement($this->namespace. ':MultiCurve');
+		$num_curves = $geom->numGeometries();
+		if ( $num_curves ) {
+			for ( $i=0; $i<$num_curves; $i++) {
+				$curveMember   = $this->ownerDocument($node)->createElement($this->namespace. ':curveMember');
+				$multicurve->appendChild($this->writePoint($geom->geometryN($i), $curveMember));
+			}
+		}
+		return $multicurve;
+	}	
+	
+	protected function writeMultiPolygon(MultiPolygon $geom, DOMNode $node) { 
+		$multipolygon   = $this->ownerDocument($node)->createElement($this->namespace. ':MultiPolygon');
+		$num_polygons = $geom->numGeometries();
+		if ( $num_polygons ) {
+			for ( $i=0; $i<$num_polygons; $i++) {
+				$polygonMember   = $this->ownerDocument($node)->createElement($this->namespace. ':polygonMember');
+				$multipolygon->appendChild($this->writePoint($geom->geometryN($i), $polygonMember));
+			}
+		}
+		return $multipolygon;
+	}
+	
+	protected function writeMultiGeometry(Collection $geom, DOMNode $node) { 
+		$multiGeometry   = $this->ownerDocument($node)->createElement($this->namespace. ':MultiGeometry');
+		$num_geometry = $geom->numGeometries();
+		if ( $num_geometry ) {
+			for ( $i=0; $i<$num_geometry; $i++) {
+				$geometryMember   = $this->ownerDocument($node)->createElement($this->namespace. ':geometryMember');
+				$multiGeometry->appendChild($this->writePoint($geom->geometryN($i), $geometryMember));
+			}
+		}
+		return $multiGeometry;
+	}
+	
+	
+/*
+	protected function metaDataProperty() {
+	
+	}
+<gml:MultiGeometry gml:id="ID">
+   <gml:metaDataProperty>
+      <gml:GenericMetaData>Any text, intermingled with:
+         <!--any element-->
+      </gml:GenericMetaData>
+   </gml:metaDataProperty>
+   <gml:description>string</gml:description>
+   <gml:descriptionReference/>
+   <gml:identifier codeSpace="http://www.example.com/">string</gml:identifier>
+   <gml:name>string</gml:name>
+   <gml:geometryMember>
+   </gml:geometryMember>
+   <gml:geometryMembers>
+   </gml:geometryMembers>
+</gml:MultiGeometry>
+
+
+
+linestring deprecated in gml 3
+	<gml:MultiCurve gml:id="ID">
+   <gml:metaDataProperty>
+      <gml:GenericMetaData>Any text, intermingled with:
+         <!--any element-->
+      </gml:GenericMetaData>
+   </gml:metaDataProperty>
+   <gml:description>string</gml:description>
+   <gml:descriptionReference/>
+   <gml:identifier codeSpace="http://www.example.com/">string</gml:identifier>
+   <gml:name>string</gml:name>
+   <gml:curveMember>
+      <gml:LineString gml:id="ID">
+         <gml:metaDataProperty>...
+         </gml:metaDataProperty>
+         <gml:description>string</gml:description>
+         <gml:descriptionReference/>
+         <gml:identifier codeSpace="http://www.example.com/">string</gml:identifier>
+         <gml:name>string</gml:name>
+         <gml:pos>1.0 1.0</gml:pos>
+      </gml:LineString>
+   </gml:curveMember>
+   <gml:curveMembers>
+      <gml:LineString gml:id="ID">
+         <gml:metaDataProperty>...
+         </gml:metaDataProperty>
+         <gml:description>string</gml:description>
+         <gml:descriptionReference/>
+         <gml:identifier codeSpace="http://www.example.com/">string</gml:identifier>
+         <gml:name>string</gml:name>
+         <gml:pos>1.0 1.0</gml:pos>
+      </gml:LineString>
+   </gml:curveMembers>
+</gml:MultiCurve>
+	*/
+	
 /*
  * <gml:MultiPoint gml:id="ID">
    <gml:metaDataProperty>
