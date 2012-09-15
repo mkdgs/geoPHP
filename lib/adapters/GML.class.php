@@ -205,10 +205,10 @@ class Gml extends GeoAdapter
 				return $this->writePoint($geom, $xmlobj);
 				break;
 			case 'linestring':
-				return $this->linestringToGeoRSS($geom, $xmlobj);
+				return $this->writeLineString($geom, $xmlobj);
 				break;
 			case 'polygon':
-				return $this->PolygonToGeoRSS($geom, $xmlobj);
+				return $this->writePolygon($geom, $xmlobj);
 				break;
 			case 'multipoint':
 			case 'multilinestring':
@@ -237,7 +237,7 @@ class Gml extends GeoAdapter
 		return $point;
 	}
 	
-	private function writeLinestring(LineString $geom, DOMNode $node) {		
+	private function writeLineString(LineString $geom, DOMNode $node) {		
 		$position = array();
 		foreach ($geom->getComponents() as $k => $point) {			
 			$position[] = $point->getX().' '. $point->getY().( $geom->hasZ() ) ? ' '.$point->z() : '';			
@@ -275,10 +275,8 @@ class Gml extends GeoAdapter
 
 	
 	private function writePolygon(Polygon $geom, DOMNode $node) {
-		$output = '<'.$this->nss.'polygon>';		
 		$polygon   = $node->ownerDocument->createElementNS($this->namespace, 'polygon');
-		$exterior  = $node->ownerDocument->createElementNS($this->namespace, 'exterior');
-		
+		$exterior  = $node->ownerDocument->createElementNS($this->namespace, 'exterior');		
 		
 		$exterior_ring = $geom->exteriorRing();
 		if ( $exterior_ring->numPoints() ) {
@@ -295,5 +293,46 @@ class Gml extends GeoAdapter
 		$node->appendChild($polygon);	
 		return $polygon;
 	}
+	
+	private function writeMultipoint(MultiPoint $geom, DOMNode $node) {
+		$multipoint   = $node->ownerDocument->createElementNS($this->namespace, 'MultiPoint');
+		
+	}
+/*
+ * <gml:MultiPoint gml:id="ID">
+   <gml:metaDataProperty>
+      <gml:GenericMetaData>Any text, intermingled with:
+         <!--any element-->
+      </gml:GenericMetaData>
+   </gml:metaDataProperty>
+   <gml:description>string</gml:description>
+   <gml:descriptionReference/>
+   <gml:identifier codeSpace="http://www.example.com/">string</gml:identifier>
+   <gml:name>string</gml:name>
+   <gml:pointMember>
+      <gml:Point gml:id="ID">
+         <gml:metaDataProperty>...
+         </gml:metaDataProperty>
+         <gml:description>string</gml:description>
+         <gml:descriptionReference/>
+         <gml:identifier codeSpace="http://www.example.com/">string</gml:identifier>
+         <gml:name>string</gml:name>
+         <gml:pos>1.0 1.0</gml:pos>
+      </gml:Point>
+   </gml:pointMember>
+   <gml:pointMembers>
+      <gml:Point gml:id="ID">
+         <gml:metaDataProperty>...
+         </gml:metaDataProperty>
+         <gml:description>string</gml:description>
+         <gml:descriptionReference/>
+         <gml:identifier codeSpace="http://www.example.com/">string</gml:identifier>
+         <gml:name>string</gml:name>
+         <gml:pos>1.0 1.0</gml:pos>
+      </gml:Point>
+   </gml:pointMembers>
+</gml:MultiPoint> 
 
+
+ */
 }
