@@ -221,7 +221,7 @@ class GML extends GeoAdapter {
 				$this->writeMultiPolygon($geom, $xmlobj);
 				break;
 			case 'geometrycollection':
-				$this->writeCollection($geom, $xmlobj);
+				$this->writeMultiGeometry($geom, $xmlobj);
 				break;
 		}
 		// add on first srsName=\"$this->srsname\"

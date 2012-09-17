@@ -11,7 +11,6 @@
 abstract class Collection extends Geometry
 {
   public $components = array();
-  protected $dimention = 2;
 
   /**
    * Constructor: Checks and sets component geometries
