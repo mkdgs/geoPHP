@@ -2,7 +2,7 @@
 /**
  * MultiLineString: A collection of LineStrings
  */
-class MultiLineString extends Collection
+class MultiLineString extends GeometryCollection
 {
   protected $geom_type = 'MultiLineString';
   protected $dimention = 2;

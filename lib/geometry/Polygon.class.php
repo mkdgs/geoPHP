@@ -4,7 +4,7 @@
  * Polygon: A polygon is a plane figure that is bounded by a closed path,
  * composed of a finite sequence of straight line segments
  */
-class Polygon extends Collection
+class Polygon extends Surface
 {
   protected $geom_type = 'Polygon';
   

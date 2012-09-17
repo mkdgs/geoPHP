@@ -2,16 +2,9 @@
 /**
  * MultiPoint: A collection Points
  */
-class MultiPoint extends Collection
+class MultiPoint extends GeometryCollection
 {
   protected $geom_type = 'MultiPoint';
-
-  /**
-   * @deprecated is a linestring methods, use numGeometries 
-   */
-  public function numPoints() {
-    return $this->numGeometries();
-  }
 
   public function isSimple() {
     return TRUE;

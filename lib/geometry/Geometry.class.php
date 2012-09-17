@@ -5,370 +5,547 @@
  */
 abstract class Geometry
 {
-  private   $geos = NULL;
-  protected $srid = NULL;
-  protected $geom_type;
-  protected $dimention = 2; // or dimension ?
-  protected $measured = false;
-  
-  // Abtract: Standard 
-  // -----------------
-  abstract public function dimension();  
-  abstract public function boundary();
+	private   $geos = NULL;
+	protected $srid = NULL;
+	protected $geom_type;
+	protected $dimention = 2; // or dimension ?
+	protected $measured = false;
 
-  
-  abstract public function distance(Geometry $geom);
-  abstract public function equals($geom);
-  abstract public function isEmpty();
-  abstract public function isSimple();
+	public $components = array();
 
-  // Abtract: Non-Standard
-  // ---------------------
-  abstract public function getBBox();
-  abstract public function asArray();
-  abstract public function getPoints();
- 
-  abstract public function greatCircleLength(); //meters
-  abstract public function haversineLength(); //degrees
-  abstract public function flatten(); // 3D to 2D
+	/**
+	 * Constructor: Checks and sets component geometries
+	 *
+	 * @param array $components array of geometries
+	*/
+	public function __construct($components = array()) {
+		if (!is_array($components)) {
+			throw new Exception("Component geometries must be passed as an array");
+		}
+		foreach ($components as $component) {
+			if ($component instanceof Geometry) {
+				$this->components[] = $component;
+				if ($component->coordinateDimension() > $this->dimention) {
+					$this->dimention = $component->coordinateDimension();
+				}
+			}
+			else {
+				throw new Exception("Cannot create a collection with non-geometries");
+			}
+		}
+	}
 
-/* this methods are not shared on all geometry type
- 
-  - we need Curve and Surface abstract class
-  
-  only for Geometry colection
-  abstract public function numGeometries();
-  abstract public function geometryN($n);
-  
-  
-  only for Surface --> Polygon
-  abstract public function exteriorRing();
-  abstract public function numInteriorRings();
-  abstract public function interiorRingN($n);
-  abstract public function centroid();
-  abstract public function area();
-  
-  
-  only for Curve --> Linestring
-  abstract public function length();
-  abstract public function length3D();
-  abstract public function startPoint();
-  abstract public function endPoint();
-  abstract public function isRing();            // Mssing dependancy
-  abstract public function isClosed(); 
-  abstract public function numPoints();
-  abstract public function pointN($n);    
-  
-  abstract public function explode(); // Get all line segments (non standar?)
-  
-  
-  // will be removed from here (this is for Point only)
-  public function x() {return null;}
-  public function y() {return null;}
-  public function z()	{return null;}
-  public function m()	{return null;}
-  public function getX() {return null;}
-  public function getY() {return null;}
+	/**
+	 * Returns Collection component geometries
+	 *
+	 * @return array
+	 */
+	public function getComponents() {
+		return $this->components;
+	}
 
-*/
-  // Public: Standard -- Common to all geometries
-  // --------------------------------------------
-  public function SRID() {
-    return $this->srid;
-  }
+	// Abtract: Standard
+	// -----------------
 
-  public function setSRID($srid) {
-    if ($this->geos()) {
-      $this->geos()->setSRID($srid);
-    }
-    $this->srid = $srid;
-  }
+	// By default, the boundary of a collection is the boundary of it's components
+	public function boundary() {
+		if ($this->isEmpty()) return new LineString();
 
-  public function envelope() {
-    if ($this->isEmpty()) return new Polygon();
+		if ($this->geos()) {
+			return $this->geos()->boundary();
+		}
 
-    if ($this->geos()) {
-      return geoPHP::geosToGeometry($this->geos()->envelope());
-    }
-
-    $bbox = $this->getBBox();
-    $points = array (
-      new Point($bbox['maxx'],$bbox['miny']),
-      new Point($bbox['maxx'],$bbox['maxy']),
-      new Point($bbox['minx'],$bbox['maxy']),
-      new Point($bbox['minx'],$bbox['miny']),
-      new Point($bbox['maxx'],$bbox['miny']),
-    );
-
-    $outer_boundary = new LineString($points);
-    return new Polygon(array($outer_boundary));
-  }
-
-  public function geometryType() {
-    return $this->geom_type;
-  }
-
-  public function coordinateDimension() {
-    return $this->dimention;
-  }
- 
-
-  /**
-   * check if is a 3D point
-   *
-   * @return true or NULL if is not a 3D point
-   */
-  public function hasZ() {
-    if ($this->dimention == 3) {
-      return TRUE;
-    }
-  }
-  /**
-   * set geometry have 3d value
-   * 
-   * @param bool 
-   */
-  public function set3d($bool) {
-  	$this->dimention = ($bool) ? 3 : 2;
-  }
-  
-  /**
-   * check if is a measured value
-   *
-   * @return true or NULL if is a measured value
-   */
-  public function isMeasured() {
-  	return $this->measured;
-  }
-  
-  /**
-   * set geometry have measured value
-   * 
-   * @param bool
-   */
-  public function setMeasured($bool) {
-  	$this->measured = ($bool) ? true : false;
-  }
-  
-  // Public: Non-Standard -- Common to all geometries
-  // ------------------------------------------------
-
-  // $this->out($format, $other_args);
-  public function out() {
-    $args = func_get_args();
-
-    $format = array_shift($args);
-    $type_map = geoPHP::getAdapterMap();
-    $processor_type = $type_map[$format];
-    $processor = new $processor_type();
-
-    array_unshift($args, $this);
-    $result = call_user_func_array(array($processor, 'write'), $args);
-    
-    return $result;
-  }
+		$components_boundaries = array();
+		foreach ($this->components as $component) {
+			$components_boundaries[] = $component->boundary();
+		}
+		return geoPHP::geometryReduce($components_boundaries);
+	}
 
 
-  // Public: Aliases
-  // ---------------
-  public function getCentroid() {
-    return $this->centroid();
-  }
+	public function equals(Geometry $geometry) {
+		if ($this->geos()) {
+			return $this->geos()->equals($geometry->geos());
+		}
 
-  public function getArea() {
-    return $this->area();
-  }
+		// To test for equality we check to make sure that there is a matching point
+		// in the other geometry for every point in this geometry.
+		// This is slightly more strict than the standard, which
+		// uses Within(A,B) = true and Within(B,A) = true
+		// @@TODO: Eventually we could fix this by using some sort of simplification
+		// method that strips redundant vertices (that are all in a row)
 
-  public function getGeos() {
-    return $this->geos();
-  }
+		$this_points = $this->getPoints();
+		$other_points = $geometry->getPoints();
 
-  public function getGeomType() {
-    return $this->geometryType();
-  }
+		// First do a check to make sure they have the same number of vertices
+		if (count($this_points) != count($other_points)) {
+			return FALSE;
+		}
 
-  public function getSRID() {
-    return $this->SRID();
-  }
+		foreach ($this_points as $point) {
+			$found_match = FALSE;
+			foreach ($other_points as $key => $test_point) {
+				if ($point->equals($test_point)) {
+					$found_match = TRUE;
+					unset($other_points[$key]);
+					break;
+				}
+			}
+			if (!$found_match) {
+				return FALSE;
+			}
+		}
 
-  public function asText() {
-    return $this->out('wkt');
-  }
+		// All points match, return TRUE
+		return TRUE;
+	}
 
-  public function asBinary() {
-    return $this->out('wkb');
-  }
+	public function isSimple() {
+		if ($this->geos()) {
+			return $this->geos()->isSimple();
+		}
 
-  public function is3D() {
-    return $this->hasZ();
-  }
+		// A collection is simple if all it's components are simple
+		foreach ($this->components as $component) {
+			if (!$component->isSimple()) return FALSE;
+		}
 
-  // Public: GEOS Only Functions
-  // ---------------------------
-  public function geos() {
-    // If it's already been set, just return it
-    if ($this->geos && geoPHP::geosInstalled()) {
-      return $this->geos;
-    }
-    // It hasn't been set yet, generate it
-    if (geoPHP::geosInstalled()) {
-      $reader = new GEOSWKBReader();
-      $this->geos = $reader->readHEX($this->out('wkb',TRUE));
-    }
-    else {
-      $this->geos = FALSE;
-    }
-    return $this->geos;
-  }
+		return TRUE;
+	}
 
-  public function setGeos($geos) {
-    $this->geos = $geos;
-  }
+	public function explode() {
+		$parts = array();
+		foreach ($this->components as $component) {
+			$parts = array_merge($parts, $component->explode());
+		}
+		return $parts;
+	}
 
-  public function pointOnSurface() {
-    if ($this->geos()) {
-      return geoPHP::geosToGeometry($this->geos()->pointOnSurface());
-    }
-  }
+	/*
+	 * abstract public function flatten(); // 3D to 2D
+	*/
+	public function flatten() {
+		if ($this->dimension == 3) {
+			$new_components = array();
+			foreach ($this->components as $component) {
+				$new_components[] = $component->flatten();
+			}
+			$type = $this->geometryType();
+			return new $type($new_components);
+		}
+		return $this;
+	}
 
-  public function equalsExact(Geometry $geometry) {
-    if ($this->geos()) {
-      return $this->geos()->equalsExact($geometry->geos());
-    }
-  }
+	public function distance(Geometry $geometry) {
+		if ($this->geos()) {
+			return $this->geos()->distance($geometry->geos());
+		}
 
-  public function relate(Geometry $geometry, $pattern = NULL) {
-    if ($this->geos()) {
-      if ($pattern) {
-        return $this->geos()->relate($geometry->geos(), $pattern);
-      }
-      else {
-        return $this->geos()->relate($geometry->geos());
-      }
-    }
-  }
+		$distance = NULL;
+		foreach ($this->components as $component) {
+			$check_distance = $component->distance($geometry);
+			if ($check_distance === 0) return 0;
+			if ($check_distance === NULL) return NULL;
+			if ($distance === NULL) $distance = $check_distance;
+			if ($check_distance < $distance) $distance = $check_distance;
+		}
+		return $distance;
+	}
 
-  public function checkValidity() {
-    if ($this->geos()) {
-      return $this->geos()->checkValidity();
-    }
-  }
+	// A Geometry is empty if it has no components OR all it's components are empty
+	public function isEmpty() {
+		if (!count($this->components)) return TRUE;
+		foreach ($this->components as $component) {
+			if (!$component->isEmpty()) return FALSE;
+		}
+		return TRUE;
+	}
 
-  public function buffer($distance) {
-    if ($this->geos()) {
-      return geoPHP::geosToGeometry($this->geos()->buffer($distance));
-    }
-  }
+	public function getBBox() {
+		if ($this->isEmpty()) return NULL;
 
-  public function intersection(Geometry $geometry) {
-    if ($this->geos()) {
-      return geoPHP::geosToGeometry($this->geos()->intersection($geometry->geos()));
-    }
-  }
+		if ($this->geos()) {
+			$envelope = $this->geos()->envelope();
+			if ($envelope->typeName() == 'Point') {
+				return geoPHP::geosToGeometry($envelope)->getBBOX();
+			}
 
-  public function convexHull() {
-    if ($this->geos()) {
-      return geoPHP::geosToGeometry($this->geos()->convexHull());
-    }
-  }
+			$geos_ring = $envelope->exteriorRing();
+			return array(
+					'maxy' => $geos_ring->pointN(3)->getY(),
+					'miny' => $geos_ring->pointN(1)->getY(),
+					'maxx' => $geos_ring->pointN(1)->getX(),
+					'minx' => $geos_ring->pointN(3)->getX(),
+			);
+		}
 
-  public function difference(Geometry $geometry) {
-    if ($this->geos()) {
-      return geoPHP::geosToGeometry($this->geos()->difference($geometry->geos()));
-    }
-  }
+		// Go through each component and get the max and min x and y
+		$i = 0;
+		foreach ($this->components as $component) {
+			$component_bbox = $component->getBBox();
 
-  public function symDifference(Geometry $geometry) {
-    if ($this->geos()) {
-      return geoPHP::geosToGeometry($this->geos()->symDifference($geometry->geos()));
-    }
-  }
+			// On the first run through, set the bbox to the component bbox
+			if ($i == 0) {
+				$maxx = $component_bbox['maxx'];
+				$maxy = $component_bbox['maxy'];
+				$minx = $component_bbox['minx'];
+				$miny = $component_bbox['miny'];
+			}
 
-  // Can pass in a geometry or an array of geometries
-  public function union(Geometry $geometry) {
-    if ($this->geos()) {
-      if (is_array($geometry)) {
-        $geom = $this->geos();
-        foreach ($geometry as $item) {
-          $geom = $geom->union($item->geos());
-        }
-        return geoPHP::geosToGeometry($geos);
-      }
-      else {
-        return geoPHP::geosToGeometry($this->geos()->union($geometry->geos()));
-      }
-    }
-  }
+			// Do a check and replace on each boundary, slowly growing the bbox
+			$maxx = $component_bbox['maxx'] > $maxx ? $component_bbox['maxx'] : $maxx;
+			$maxy = $component_bbox['maxy'] > $maxy ? $component_bbox['maxy'] : $maxy;
+			$minx = $component_bbox['minx'] < $minx ? $component_bbox['minx'] : $minx;
+			$miny = $component_bbox['miny'] < $miny ? $component_bbox['miny'] : $miny;
+			$i++;
+		}
 
-  public function simplify($tolerance, $preserveTopology = FALSE) {
-    if ($this->geos()) {
-      return geoPHP::geosToGeometry($this->geos()->simplify($tolerance, $preserveTopology));
-    }
-  }
+		return array(
+				'maxy' => $maxy,
+				'miny' => $miny,
+				'maxx' => $maxx,
+				'minx' => $minx,
+		);
+	}
 
-  public function disjoint(Geometry $geometry) {
-    if ($this->geos()) {
-      return $this->geos()->disjoint($geometry->geos());
-    }
-  }
+	public function asArray() {
+		$array = array();
+		foreach ($this->components as $component) {
+			$array[] = $component->asArray();
+		}
+		return $array;
+	}
+	
+	// Public: Standard -- Common to all geometries
+	// --------------------------------------------
+	public function SRID() {
+		return $this->srid;
+	}
 
-  public function touches(Geometry $geometry) {
-    if ($this->geos()) {
-      return $this->geos()->touches($geometry->geos());
-    }
-  }
+	public function setSRID($srid) {
+		if ($this->geos()) {
+			$this->geos()->setSRID($srid);
+		}
+		$this->srid = $srid;
+	}
 
-  public function intersects(Geometry $geometry) {
-    if ($this->geos()) {
-      return $this->geos()->intersects($geometry->geos());
-    }
-  }
+	public function envelope() {
+		if ($this->isEmpty()) return new Polygon();
 
-  public function crosses(Geometry $geometry) {
-    if ($this->geos()) {
-      return $this->geos()->crosses($geometry->geos());
-    }
-  }
+		if ($this->geos()) {
+			return geoPHP::geosToGeometry($this->geos()->envelope());
+		}
 
-  public function within(Geometry $geometry) {
-    if ($this->geos()) {
-      return $this->geos()->within($geometry->geos());
-    }
-  }
+		$bbox = $this->getBBox();
+		$points = array (
+				new Point($bbox['maxx'],$bbox['miny']),
+				new Point($bbox['maxx'],$bbox['maxy']),
+				new Point($bbox['minx'],$bbox['maxy']),
+				new Point($bbox['minx'],$bbox['miny']),
+				new Point($bbox['maxx'],$bbox['miny']),
+		);
 
-  public function contains(Geometry $geometry) {
-    if ($this->geos()) {
-      return $this->geos()->contains($geometry->geos());
-    }
-  }
+		$outer_boundary = new LineString($points);
+		return new Polygon(array($outer_boundary));
+	}
 
-  public function overlaps(Geometry $geometry) {
-    if ($this->geos()) {
-      return $this->geos()->overlaps($geometry->geos());
-    }
-  }
+	public function geometryType() {
+		return $this->geom_type;
+	}
 
-  public function covers(Geometry $geometry) {
-    if ($this->geos()) {
-      return $this->geos()->covers($geometry->geos());
-    }
-  }
+	public function coordinateDimension() {
+		return $this->dimention;
+	}
 
-  public function coveredBy(Geometry $geometry) {
-    if ($this->geos()) {
-      return $this->geos()->coveredBy($geometry->geos());
-    }
-  }
 
-  public function hausdorffDistance(Geometry $geometry) {
-    if ($this->geos()) {
-      return $this->geos()->hausdorffDistance($geometry->geos());
-    }
-  }
+	/**
+	 * check if is a 3D point
+	 *
+	 * @return true or NULL if is not a 3D point
+	 */
+	public function hasZ() {
+		if ($this->dimention == 3) {
+			return TRUE;
+		}
+	}
+	/**
+	 * set geometry have 3d value
+	 *
+	 * @param bool
+	 */
+	public function set3d($bool) {
+		$this->dimention = ($bool) ? 3 : 2;
+	}
 
-  public function project(Geometry $point, $normalized = NULL) {
-    if ($this->geos()) {
-      return $this->geos()->project($point->geos(), $normalized);
-    }
-  }
+	/**
+	 * check if is a measured value
+	 *
+	 * @return true or NULL if is a measured value
+	 */
+	public function isMeasured() {
+		return $this->measured;
+	}
+
+	/**
+	 * set geometry have measured value
+	 *
+	 * @param bool
+	 */
+	public function setMeasured($bool) {
+		$this->measured = ($bool) ? true : false;
+	}
+
+	// Public: Non-Standard -- Common to all geometries
+	// ------------------------------------------------
+
+	// $this->out($format, $other_args);
+	public function out() {
+		$args = func_get_args();
+
+		$format = array_shift($args);
+		$type_map = geoPHP::getAdapterMap();
+		$processor_type = $type_map[$format];
+		$processor = new $processor_type();
+
+		array_unshift($args, $this);
+		$result = call_user_func_array(array($processor, 'write'), $args);
+
+		return $result;
+	}
+
+
+	// Public: Aliases
+	// ---------------
+	public function getCentroid() {
+		return $this->centroid();
+	}
+
+	public function getArea() {
+		return $this->area();
+	}
+
+	public function getGeos() {
+		return $this->geos();
+	}
+
+	public function getGeomType() {
+		return $this->geometryType();
+	}
+
+	public function getSRID() {
+		return $this->SRID();
+	}
+
+	public function asText() {
+		return $this->out('wkt');
+	}
+
+	public function asBinary() {
+		return $this->out('wkb');
+	}
+
+	public function is3D() {
+		return $this->hasZ();
+	}
+
+	// Public: GEOS Only Functions
+	// ---------------------------
+	public function geos() {
+		// If it's already been set, just return it
+		if ($this->geos && geoPHP::geosInstalled()) {
+			return $this->geos;
+		}
+		// It hasn't been set yet, generate it
+		if (geoPHP::geosInstalled()) {
+			$reader = new GEOSWKBReader();
+			$this->geos = $reader->readHEX($this->out('wkb',TRUE));
+		}
+		else {
+			$this->geos = FALSE;
+		}
+		return $this->geos;
+	}
+
+	public function setGeos($geos) {
+		$this->geos = $geos;
+	}
+
+	public function pointOnSurface() {
+		if ($this->geos()) {
+			return geoPHP::geosToGeometry($this->geos()->pointOnSurface());
+		}
+	}
+
+	public function equalsExact(Geometry $geometry) {
+		if ($this->geos()) {
+			return $this->geos()->equalsExact($geometry->geos());
+		}
+	}
+
+	public function relate(Geometry $geometry, $pattern = NULL) {
+		if ($this->geos()) {
+			if ($pattern) {
+				return $this->geos()->relate($geometry->geos(), $pattern);
+			}
+			else {
+				return $this->geos()->relate($geometry->geos());
+			}
+		}
+	}
+
+	public function checkValidity() {
+		if ($this->geos()) {
+			return $this->geos()->checkValidity();
+		}
+	}
+
+	public function buffer($distance) {
+		if ($this->geos()) {
+			return geoPHP::geosToGeometry($this->geos()->buffer($distance));
+		}
+	}
+
+	public function intersection(Geometry $geometry) {
+		if ($this->geos()) {
+			return geoPHP::geosToGeometry($this->geos()->intersection($geometry->geos()));
+		}
+	}
+
+	public function convexHull() {
+		if ($this->geos()) {
+			return geoPHP::geosToGeometry($this->geos()->convexHull());
+		}
+	}
+
+	public function difference(Geometry $geometry) {
+		if ($this->geos()) {
+			return geoPHP::geosToGeometry($this->geos()->difference($geometry->geos()));
+		}
+	}
+
+	public function symDifference(Geometry $geometry) {
+		if ($this->geos()) {
+			return geoPHP::geosToGeometry($this->geos()->symDifference($geometry->geos()));
+		}
+	}
+
+	// Can pass in a geometry or an array of geometries
+	public function union(Geometry $geometry) {
+		if ($this->geos()) {
+			if (is_array($geometry)) {
+				$geom = $this->geos();
+				foreach ($geometry as $item) {
+					$geom = $geom->union($item->geos());
+				}
+				return geoPHP::geosToGeometry($geos);
+			}
+			else {
+				return geoPHP::geosToGeometry($this->geos()->union($geometry->geos()));
+			}
+		}
+	}
+
+	public function simplify($tolerance, $preserveTopology = FALSE) {
+		if ($this->geos()) {
+			return geoPHP::geosToGeometry($this->geos()->simplify($tolerance, $preserveTopology));
+		}
+	}
+
+	public function disjoint(Geometry $geometry) {
+		if ($this->geos()) {
+			return $this->geos()->disjoint($geometry->geos());
+		}
+	}
+
+	public function touches(Geometry $geometry) {
+		if ($this->geos()) {
+			return $this->geos()->touches($geometry->geos());
+		}
+	}
+
+	public function intersects(Geometry $geometry) {
+		if ($this->geos()) {
+			return $this->geos()->intersects($geometry->geos());
+		}
+	}
+
+	public function crosses(Geometry $geometry) {
+		if ($this->geos()) {
+			return $this->geos()->crosses($geometry->geos());
+		}
+	}
+
+	public function within(Geometry $geometry) {
+		if ($this->geos()) {
+			return $this->geos()->within($geometry->geos());
+		}
+	}
+
+	public function contains(Geometry $geometry) {
+		if ($this->geos()) {
+			return $this->geos()->contains($geometry->geos());
+		}
+	}
+
+	public function overlaps(Geometry $geometry) {
+		if ($this->geos()) {
+			return $this->geos()->overlaps($geometry->geos());
+		}
+	}
+
+	public function covers(Geometry $geometry) {
+		if ($this->geos()) {
+			return $this->geos()->covers($geometry->geos());
+		}
+	}
+
+	public function coveredBy(Geometry $geometry) {
+		if ($this->geos()) {
+			return $this->geos()->coveredBy($geometry->geos());
+		}
+	}
+
+	public function hausdorffDistance(Geometry $geometry) {
+		if ($this->geos()) {
+			return $this->geos()->hausdorffDistance($geometry->geos());
+		}
+	}
+
+	public function project(Geometry $point, $normalized = NULL) {
+		if ($this->geos()) {
+			return $this->geos()->project($point->geos(), $normalized);
+		}
+	}
+
+
+	// bad methods
+
+
+	public function length() {
+		$length = 0;
+		foreach ($this->components as $delta => $component) {
+			$length += $component->length();
+		}
+		return $length;
+	}
+
+	public function length3D() {
+		$length = 0;
+		foreach ($this->components as $delta => $component) {
+			$length += $component->length3D();
+		}
+		return $length;
+	}
+
+	public function dimension() {
+		$dimension = $this->dimention;
+		foreach ($this->components as $component) {
+			if ($component->dimension() > $dimension) {
+				$dimension = $component->dimension();
+			}
+		}
+		return $dimension;
+	}
+
 }

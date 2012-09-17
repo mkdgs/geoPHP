@@ -103,10 +103,6 @@ class Point extends Geometry
     );
   }
 
-  public function asArray($assoc = FALSE) {
-    return $this->coords;
-  }
-
   public function area() {
     return 0;
   }
@@ -148,7 +144,7 @@ class Point extends Geometry
     return array($this);
   }
 
-  public function equals($geometry) {
+  public function equals(Geometry $geometry) {
     return ($this->x() == $geometry->x() && $this->y() == $geometry->y());
   }
 

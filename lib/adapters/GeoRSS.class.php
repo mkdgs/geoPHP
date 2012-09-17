@@ -50,6 +50,8 @@ class GeoRSS extends GeoAdapter
     libxml_use_internal_errors(true);
 	$xmlobj = new DOMDocument('1.0', 'UTF-8');
 	@$xmlobj->loadXML($xml);
+	
+	// @todo test with "//*[@xmlns]";  
 	// we need namespace, always
 	if ( !$xmlobj->hasChildNodes() || !$xmlobj->firstChild->getAttributeNode('xmlns:georss') ) {
 		$element = $xmlobj->createElement('feed');

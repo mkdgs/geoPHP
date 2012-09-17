@@ -45,6 +45,7 @@ class GeoJSON extends GeoAdapter
   }
 
   private function objToGeom($obj) {
+  	var_dump($obj);
     $type = $obj->type;
 
     if ($type == 'GeometryCollection') {
@@ -55,6 +56,7 @@ class GeoJSON extends GeoAdapter
   }
 
   private function arrayToPoint($array) {
+  	
     return new Point($array[0], $array[1]);
   }
 
@@ -126,25 +128,67 @@ class GeoJSON extends GeoAdapter
     }
   }
 
-  public function getArray($geometry) {
-    if ($geometry->getGeomType() == 'GeometryCollection') {
+  public function coordsPoint(Geometry $geometry) {
+  	return array($geometry->getX(), $geometry->getY());
+  }
+  
+  public function coordsCurve(Geometry $geometry) {
+  	$a = array();
+  	foreach ( $geometry->getComponents() as $g ) {
+  		$a[] = $this->coordsPoint($g);
+  	}
+  	return $a;
+  }
+  
+  public function coordsSurface(Geometry $geometry) {
+  	
+  }
+  
+  public function getArray(Geometry $geometry) {
+   
+  	  if ( $geometry->geometryType() == 'Point' ) {
+  	  	return array(
+  	  		'type' => $geometry->geometryType(),
+  	  		'coordinates' => $component->asArray()
+  	  	);
+  	  }
+  	  
+  	  if ( $geometry instanceof Point ) {
+  	  	return array(
+  	  			'type' => $geometry->geometryType(),
+  	  			'coordinates' => array($geometry->getX(), $geometry->getY())
+  	  	);
+  	  }
+  	  
+  	  if ( $geometry instanceof Curve ) {
+  	  	
+  	  }
+  	  
+  	  if ( $geometry instanceof Polygon ) {
+  	  
+  	  }
+  	  
+  	  if ( $geometry instanceof GeometryCollection ) {
+  	  
+  	  }
+   	  
+  	  
       $component_array = array();
-      foreach ($geometry->components as $component) {
-        $component_array[] = array(
-          'type' => $component->geometryType(),
-          'coordinates' => $component->asArray(),
-        );
-      }
+   	  if( count($geometry->components)  ) {
+	      foreach ($geometry->components as $component) {
+	        $component_array[] = array(
+	          'type' => $component->geometryType(),
+	          'geometries' => $component->asArray(),
+	        );
+	      }
+   	  }
+   	  else $component_array = $geometry->asArray();
       return array(
-        'type'=> 'GeometryCollection',
+        'type'=> $geometry->geometryType(),
         'geometries'=> $component_array,
       );
-    }
-    else return array(
-      'type'=> $geometry->getGeomType(),
-      'coordinates'=> $geometry->asArray(),
-    );
   }
+  
 }
 
 
