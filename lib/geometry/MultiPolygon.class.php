@@ -5,5 +5,5 @@
 class MultiPolygon extends GeometryCollection
 {
   protected $geom_type = 'MultiPolygon';
-  protected $dimention = 2;
+  protected $dimension = 2;
 }

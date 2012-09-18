@@ -8,7 +8,7 @@ abstract class Geometry
 	private   $geos = NULL;
 	protected $srid = NULL;
 	protected $geom_type;
-	protected $dimention = 2; // or dimension ?
+	protected $dimension = 2; // or dimension ?
 	protected $measured = false;
 
 	public $components = array();
@@ -25,8 +25,8 @@ abstract class Geometry
 		foreach ($components as $component) {
 			if ($component instanceof Geometry) {
 				$this->components[] = $component;
-				if ($component->coordinateDimension() > $this->dimention) {
-					$this->dimention = $component->coordinateDimension();
+				if ($component->coordinateDimension() > $this->dimension) {
+					$this->dimension = $component->coordinateDimension();
 				}
 			}
 			else {
@@ -44,7 +44,7 @@ abstract class Geometry
 	 * to the coordinate dimension. This specification is restricted to geometries in 2-dimensional coordinate space.
 	 */
 	public function dimension() {
-		$dimension = $this->dimention;
+		$dimension = $this->dimension;
 		foreach ($this->components as $component) {
 			if ($component->dimension() > $dimension) {
 				$dimension = $component->dimension();
@@ -298,7 +298,7 @@ abstract class Geometry
 	}
 
 	public function coordinateDimension() {
-		return $this->dimention;
+		return $this->dimension;
 	}
 
 
@@ -308,7 +308,7 @@ abstract class Geometry
 	 * @return true or NULL if is not a 3D point
 	 */
 	public function hasZ() {
-		if ($this->dimention == 3) {
+		if ($this->dimension == 3) {
 			return TRUE;
 		}
 	}
@@ -319,7 +319,7 @@ abstract class Geometry
 	 * @param bool
 	 */
 	public function set3d($bool) {
-		$this->dimention = ($bool) ? 3 : 2;
+		$this->dimension = ($bool) ? 3 : 2;
 	}
 
 	/**
