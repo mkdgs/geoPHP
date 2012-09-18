@@ -154,14 +154,8 @@ abstract class Geometry
 	}
 
 	// A Geometry is empty if it has no components OR all it's components are empty
-	public function isEmpty() {
-		if (!count($this->components)) return TRUE;
-		foreach ($this->components as $component) {
-			if (!$component->isEmpty()) return FALSE;
-		}
-		return TRUE;
-	}
-
+	abstract public function isEmpty();
+	
 	public function getBBox() {
 		if ($this->isEmpty()) return NULL;
 
@@ -230,6 +224,9 @@ abstract class Geometry
 		$this->srid = $srid;
 	}
 
+	/**
+	 * @return Polygon
+	 */
 	public function envelope() {
 		if ($this->isEmpty()) return new Polygon();
 

@@ -12,7 +12,10 @@ abstract class Surface extends Geometry
 {
 
 
-
+	public function isEmpty() {
+		if (!count($this->components)) return TRUE;
+		return false;
+	}
 
   public function centroid() {
     if ($this->isEmpty()) return NULL;

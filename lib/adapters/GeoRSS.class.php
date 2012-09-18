@@ -207,27 +207,27 @@ class GeoRSS extends GeoAdapter
     return $output;
   }
   
-  private function pointToGeoRSS($geom) {
+  private function pointToGeoRSS(Point $geom) {
     return '<'.$this->nss.'point>'.$geom->getY().' '.$geom->getX().'</'.$this->nss.'point>';
   }
   
 
-  private function linestringToGeoRSS($geom) {
+  private function linestringToGeoRSS(Curve $geom) {
     $output = '<'.$this->nss.'line>';
     foreach ($geom->getComponents() as $k => $point) {
       $output .= $point->getY().' '.$point->getX();
-      if ($k < ($geom->numGeometries() -1)) $output .= ' ';
+      if ($k < ($geom->numPoints() -1)) $output .= ' ';
     }
     $output .= '</'.$this->nss.'line>';
     return $output;
   }
 
-  private function polygonToGeoRSS($geom) {
+  private function polygonToGeoRSS(Polygon $geom) {
     $output = '<'.$this->nss.'polygon>';
     $exterior_ring = $geom->exteriorRing();
     foreach ($exterior_ring->getComponents() as $k => $point) {
       $output .= $point->getY().' '.$point->getX();
-      if ($k < ($exterior_ring->numGeometries() -1)) $output .= ' ';
+      if ($k < ($exterior_ring->numPoints() -1)) $output .= ' ';
     }
     $output .= '</'.$this->nss.'polygon>';
     return $output;

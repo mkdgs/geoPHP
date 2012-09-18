@@ -102,13 +102,16 @@ class Polygon extends Surface
     return $this->components[0];
   }
 
-  public function numInteriorRings() {
-    if ($this->isEmpty()) return 0;
-    return $this->numGeometries()-1;
+  public function numInteriorRings() {  	
+    if ($this->isEmpty()) return 0;    
+    return count($this->components)-1;
   }
 
   public function interiorRingN($n) {
-    return $this->geometryN($n+1);
+  	if ( array_key_exists($n+1, $this->components) ) {
+  	  return $this->components[$n+1];
+  	}
+  	return null;
   }
 
   public function dimension() {

@@ -82,7 +82,7 @@ class WKB extends GeoAdapter {
 		return $this;
 	}
 
-	protected function write_uint($uint) {
+	protected function write_uint($uint) {		
 		$this->packerPosition += 4;
 		$this->packerWkb .= pack($this->uint_marker, (int) $uint);
 		return $this;
@@ -169,7 +169,7 @@ class WKB extends GeoAdapter {
 	protected function getLineString() {
 		// Get the number of points expected in this string out of the first 4 bytes
 		$line_length = $this->read_uint();
-
+		
 		// Return an empty linestring if there is no line-length
 		if (!$line_length) return new LineString();
 		
@@ -315,7 +315,7 @@ class WKB extends GeoAdapter {
 		}		
 	}
 
-	protected function writeLineString($line) {
+	protected function writeLineString(Curve $line) {
 		// Set the number of points in this line
 		$this->write_uint($line->numPoints());
 		// Set the coords
@@ -324,9 +324,9 @@ class WKB extends GeoAdapter {
 		}
 	}
 
-	protected function writePolygon($poly) {
+	protected function writePolygon(Polygon $poly) {
 		// Set the number of lines in this poly
-		$this->write_uint($poly->numGeometries());
+		$this->write_uint( count($poly->getComponents()) );// +1 for exterior ring
 		// Write the lines
 		foreach ($poly->getComponents() as $line) {
 			$this->writeLineString($line);

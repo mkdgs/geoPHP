@@ -45,7 +45,7 @@ class GeoJSON extends GeoAdapter
   }
 
   private function objToGeom($obj) {
-  	var_dump($obj);
+  
     $type = $obj->type;
 
     if ($type == 'GeometryCollection') {
@@ -128,11 +128,11 @@ class GeoJSON extends GeoAdapter
     }
   }
 
-  public function coordsPoint(Geometry $geometry) {
+  public function coordsPoint(Point $geometry) {
   	return array($geometry->getX(), $geometry->getY());
   }
   
-  public function coordsCurve(Geometry $geometry) {
+  public function coordsCurve(Curve $geometry) {
   	$a = array();
   	foreach ( $geometry->getComponents() as $g ) {
   		$a[] = $this->coordsPoint($g);
@@ -140,53 +140,77 @@ class GeoJSON extends GeoAdapter
   	return $a;
   }
   
-  public function coordsSurface(Geometry $geometry) {
-  	
+  public function coordsSurface(Surface $geometry) {
+  	$a = array();
+  	foreach ( $geometry->getComponents() as $g ) {
+  		$a[] = $this->coordsSurface($g);
+  	}
+  	return $a;
   }
   
   public function getArray(Geometry $geometry) {
-   
-  	  if ( $geometry->geometryType() == 'Point' ) {
-  	  	return array(
-  	  		'type' => $geometry->geometryType(),
-  	  		'coordinates' => $component->asArray()
-  	  	);
-  	  }
-  	  
+ 	  
   	  if ( $geometry instanceof Point ) {
   	  	return array(
-  	  			'type' => $geometry->geometryType(),
-  	  			'coordinates' => array($geometry->getX(), $geometry->getY())
+  	  		'type' => $geometry->geometryType(),
+  	  		'coordinates' => $this->coordsPoint($geometry)
   	  	);
   	  }
   	  
   	  if ( $geometry instanceof Curve ) {
-  	  	
+  	  	return array(
+  	  			'type' => $geometry->geometryType(),
+  	  			'coordinates' => $this->coordsCurve($geometry)
+  	  	);
   	  }
   	  
   	  if ( $geometry instanceof Polygon ) {
-  	  
+  	  	$coords = array();
+  	  	$coords[] = $this->coordsCurve($geometry->exteriorRing());
+  	  	$num = $geometry->numInteriorRings();
+  	  	for ($i=0; $i<$num; $i++) { 
+  	  		$coords[] = $this->coordsCurve($geometry->interiorRingN($i));
+  	  	}
+  	  	return array(
+  	  			'type' => $geometry->geometryType(),
+  	  			'coordinates' => $coords,
+  	  	);
   	  }
+
   	  
   	  if ( $geometry instanceof GeometryCollection ) {
-  	  
+  	  	if ( get_class($geometry) != 'GeometryCollection' ) {
+  	  		$coords = array();
+  	  		$num = $geometry->numGeometries();
+  	  		for ($i=1; $i<=$num; $i++) {
+  	  			if ( $geometry instanceof Point ) {
+  	  				$coords[] = $this->coordsPoint($geometry->geometryN($i));
+  	  			}
+  	  			else if ($geometry instanceof Curve ) {
+  	  				$coords[] = $this->coordsCurve($geometry->geometryN($i));
+  	  			}
+  	  			else if ($geometry instanceof Surface ) {
+  	  				$coords[] = $this->coordsSurface($geometry->geometryN($i));
+  	  			}
+  	  		}
+  	  		return array(
+  	  				'type' => $geometry->geometryType(),
+  	  				'coordinates' => $coords,
+  	  		);
+  	  	}
+  	  	
+  	  	$coords = array();
+  	  	$num = $geometry->numGeometries();
+  	  	for ($i=1; $i<=$num; $i++) {
+  	  		$coords[] = $this->getArray($geometry->geometryN($i));
+  	  	}
+
+  	  	return array(
+  	  			'type' => $geometry->geometryType(),
+  	  			'geometries' => $coords
+  	  	); 	  	
   	  }
-   	  
-  	  
-      $component_array = array();
-   	  if( count($geometry->components)  ) {
-	      foreach ($geometry->components as $component) {
-	        $component_array[] = array(
-	          'type' => $component->geometryType(),
-	          'geometries' => $component->asArray(),
-	        );
-	      }
-   	  }
-   	  else $component_array = $geometry->asArray();
-      return array(
-        'type'=> $geometry->geometryType(),
-        'geometries'=> $component_array,
-      );
+
   }
   
 }

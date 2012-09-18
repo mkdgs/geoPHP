@@ -6,6 +6,14 @@ class GeometryCollection extends Geometry
 {
   protected $geom_type = 'GeometryCollection';
   
+  public function isEmpty() {
+  	if (!count($this->components)) return TRUE;
+  	foreach ($this->components as $component) {
+  		if (!$component->isEmpty()) return FALSE;
+  	}
+  	return TRUE;
+  }
+  
   public function numGeometries() {
   	return count($this->components);
   }

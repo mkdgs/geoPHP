@@ -50,7 +50,7 @@ class GeoHash extends GeoAdapter{
       $envelope = $geometry->envelope();
       $geohashes = array();
       $geohash = '';
-      foreach ($envelope->getPoints() as $point) {
+      foreach ($envelope->exteriorRing()->getPoints() as $point) {
         $geohashes[] = $this->encodePoint($point, 0.0000001);
       }
       $i = 0;
