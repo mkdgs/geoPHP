@@ -200,7 +200,7 @@ class GML extends GeoAdapter {
 		libxml_use_internal_errors(true);
 		$xmlobj = new DOMDocument('1.0', 'UTF-8');
 			
-		$type = strtolower($geom->getGeomType());
+		$type = strtolower($geom->geometryType());
 		switch ($type) {
 			case 'point':
 				$this->writePoint($geom, $xmlobj);

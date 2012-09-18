@@ -22,7 +22,7 @@ class AliasesTests extends PHPUnit_Framework_TestCase {
           array('name' => 'getX'),
           array('name' => 'getY'),
           array('name' => 'getGeos'),
-          array('name' => 'getGeomType'),
+          array('name' => 'geometryType'),
           array('name' => 'getSRID'),
           array('name' => 'asText'),
           array('name' => 'asBinary'),
@@ -94,7 +94,7 @@ class AliasesTests extends PHPUnit_Framework_TestCase {
               break;
             case 'asText':
             case 'asBinary':
-            case 'getGeomType':
+            case 'geometryType':
               $this->assertNotNull($geometry->$alias_name($argument), 'Failed on ' . $alias_name);
               break;
             default:

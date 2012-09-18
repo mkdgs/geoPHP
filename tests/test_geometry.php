@@ -16,14 +16,14 @@ class test_geometry {
 	}
 	/**
 	 * Dimension ( ):Integer — The inherent dimension of this geometric object, which must be less than or equal
-	 to the coordinate dimension. This specification is restricted to geometries in 2-dimensional coordinate space.
+	 * to the coordinate dimension. This specification is restricted to geometries in 2-dimensional coordinate space.
 	 */
 	public function dimension() {
 
 	}
 	/**
 	 * GeometryType ( ):String — Returns the name of the instantiable subtype of Geometry of which this
-	 geometric object is a instantiable member. The name of the subtype of Geometry is returned as a string.
+	 * geometric object is a instantiable member. The name of the subtype of Geometry is returned as a string.
 	 */
 	public function geometryType()  {
 

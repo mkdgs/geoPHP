@@ -47,6 +47,14 @@ abstract class Surface extends Geometry
     }
     return $area;
   }
+  
+  public function getCentroid() {
+  	return $this->centroid();
+  }
+  
+  public function getArea() {
+  	return $this->area();
+  }
 
 
 }

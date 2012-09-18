@@ -250,11 +250,15 @@ class WKB extends GeoAdapter {
 		return $this->packerWkb;
 	}
 	
-	protected function writeType($geometry) {
+	protected $writeGeometry;
+	protected function writeType(Geometry $geometry) {
 		//+ 1000 Z
 		//+ 2000 M
 		//+ 3000 ZM
 		$type = 0;
+		// if parent geometry have z, child must have Z
+		// for that we keep parent reference
+		$this->writeGeometry = $geometry;
 		if ( $geometry->isMeasured() && $geometry->hasZ() ) {
 			$type = 3000;
 		}
@@ -265,7 +269,7 @@ class WKB extends GeoAdapter {
 			$type = 1000;
 		}
 		 
-		switch ($geometry->getGeomType()) {
+		switch ($geometry->geometryType()) {
 			case 'Point';
 				$type += 1;
 				$this->write_uint($type);
@@ -307,11 +311,11 @@ class WKB extends GeoAdapter {
 	protected function writePoint($point) {		
 		$this->write_double($point->x());
 		$this->write_double($point->y());
-		if( $point->hasZ() ) {
-			$this->write_double($point->z());
+		if( $this->writeGeometry->hasZ() ) {
+			$this->write_double((float)$point->z());
 		}
-		if ($point->isMeasured() ) {
-			$this->write_double($point->m());
+		if ($this->writeGeometry->isMeasured() ) {
+			$this->write_double((float)$point->m());
 		}		
 	}
 

@@ -130,7 +130,7 @@ class GPX extends GeoAdapter
   }
   
   protected function geometryToGPX($geom) {
-    $type = strtolower($geom->getGeomType());
+    $type = strtolower($geom->geometryType());
     switch ($type) {
       case 'point':
         return $this->pointToGPX($geom);

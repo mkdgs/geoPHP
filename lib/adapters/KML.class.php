@@ -186,7 +186,7 @@ class KML extends GeoAdapter
   }
 
   private function geometryToKML($geom) {
-    $type = strtolower($geom->getGeomType());
+    $type = strtolower($geom->geometryType());
     switch ($type) {
       case 'point':
         return $this->pointToKML($geom);
@@ -212,7 +212,7 @@ class KML extends GeoAdapter
 
   private function linestringToKML(LineString $geom, $type = FALSE) {
     if (!$type) {
-      $type = $geom->getGeomType();
+      $type = $geom->geometryType();
     }
 
     $str = '<'.$this->nss . $type .'>';

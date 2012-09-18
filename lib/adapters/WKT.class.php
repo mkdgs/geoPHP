@@ -63,12 +63,14 @@ class WKT extends GeoAdapter {
 	  }
   }
   
-  private function parsePoint($data_string) {
+  private function parsePoint($data_string) {  	
     $parts = explode(' ', trim($data_string));
+    $x =  array_shift($parts);
+    $y =  array_shift($parts);
     $z = $m = null;
-    if ( $this->hasZ ) $z = $parts[2];
-    if ( $this->measured ) $m = ( $this->hasZ ) ? $parts[3] :  $parts[2];
-    return new Point($parts[0], $parts[1], $z, $m);
+    if ( $this->hasZ ) $z = (float) array_shift($parts);
+    if ( $this->measured ) $m = (float) array_shift($parts);   
+    return new Point($x, $y, $z, $m);
   }
 
   private function parseLineString($data_string) {

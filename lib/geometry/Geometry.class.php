@@ -35,19 +35,115 @@ abstract class Geometry
 		}
 	}
 
+	/*  ____________
+	 *  BASIC METHOD
+	*/
+
 	/**
-	 * Returns Collection component geometries
-	 *
-	 * @return array
+	 * Dimension ( ):Integer — The inherent dimension of this geometric object, which must be less than or equal
+	 * to the coordinate dimension. This specification is restricted to geometries in 2-dimensional coordinate space.
 	 */
-	public function getComponents() {
-		return $this->components;
+	public function dimension() {
+		$dimension = $this->dimention;
+		foreach ($this->components as $component) {
+			if ($component->dimension() > $dimension) {
+				$dimension = $component->dimension();
+			}
+		}
+		return $dimension;
 	}
 
-	// Abtract: Standard
-	// -----------------
+	/**
+	 * GeometryType ( ):String — Returns the name of the instantiable subtype of Geometry of which this
+	 * geometric object is a instantiable member. The name of the subtype of Geometry is returned as a string.
+	 */
+	public function geometryType() {
+		return $this->geom_type;
+	}
 
-	// By default, the boundary of a collection is the boundary of it's components
+	/**
+	 * SRID ( ):Integer — Returns the Spatial Reference System ID for this geometric object.
+	 */
+	public function SRID() {
+		return $this->srid;
+	}
+
+	/**
+	 * Envelope( ):Geometry — The minimum bounding box for this Geometry, returned as a Geometry. The
+	 * polygon is defined by the corner points of the bounding box [(MINX, MINY), (MAXX, MINY), (MAXX, MAXY),
+	 * (MINX, MAXY), (MINX, MINY)].
+	 *
+	 * @return Polygon
+	 */
+	public function envelope() {
+		if ($this->isEmpty()) return new Polygon();
+
+		if ($this->geos()) {
+			return geoPHP::geosToGeometry($this->geos()->envelope());
+		}
+
+		$bbox = $this->getBBox();
+		$points = array (
+				new Point($bbox['maxx'],$bbox['miny']),
+				new Point($bbox['maxx'],$bbox['maxy']),
+				new Point($bbox['minx'],$bbox['maxy']),
+				new Point($bbox['minx'],$bbox['miny']),
+				new Point($bbox['maxx'],$bbox['miny']),
+		);
+
+		$outer_boundary = new LineString($points);
+		return new Polygon(array($outer_boundary));
+	}
+
+	/**
+	 * AsText( ):String —
+	 *  Exports this geometric object to a specific Well-known Text Representation of Geometry.
+	 */
+	public function asText() {
+		return $this->out('wkt');
+	}
+
+	/**
+	 * AsBinary( ):Binary
+	 *  Exports this geometric object to a specific Well-known Binary Representation of Geometry.
+	 */
+	public function asBinary() {
+		return $this->out('wkb');
+	}
+
+	/**
+	 * IsEmpty( ):Integer —
+	 *  Returns 1 (TRUE) if this geometric object is the empty Geometry. If true, then this
+	 *  geometric object represents the empty point set, ∅, for the coordinate space.
+	 */
+	abstract public function isEmpty();
+
+	/**
+	 * IsSimple( ):Integer —
+	 * 	Returns 1 (TRUE) if this geometric object has no anomalous geometric points, such as
+	 * 	self intersection or self tangency. The description of each instantiable geometric class will include the specific
+	 * 	conditions that cause an instance of that class to be classified as not simple.
+	 */
+	public function isSimple() {
+		if ($this->geos()) {
+			return $this->geos()->isSimple();
+		}
+
+		// A collection is simple if all it's components are simple
+		foreach ($this->components as $component) {
+			if (!$component->isSimple()) return FALSE;
+		}
+
+		return TRUE;
+	}
+
+	/**
+	 * Boundary( ):Geometry —
+	 * Returns the closure of the combinatorial boundary of this geometric object
+	 * (Reference [1], section 3.12.2). Because the result of this function is a closure, and hence topologically
+	 * closed, the resulting boundary can be represented using representational Geometry primitives (Reference [1],
+	 * section 3.12.2).
+	 */
 	public function boundary() {
 		if ($this->isEmpty()) return new LineString();
 
@@ -62,9 +158,14 @@ abstract class Geometry
 		return geoPHP::geometryReduce($components_boundaries);
 	}
 
+	
+
+	/*  ______________
+	 *  RELATION METHOD
+	 */
 
 	public function equals(Geometry $geometry) {
-		if ($this->geos()) {
+		if ( $this->geos() ) {
 			return $this->geos()->equals($geometry->geos());
 		}
 
@@ -79,7 +180,7 @@ abstract class Geometry
 		$other_points = $geometry->getPoints();
 
 		// First do a check to make sure they have the same number of vertices
-		if (count($this_points) != count($other_points)) {
+		if ( count($this_points) != count($other_points) ) {
 			return FALSE;
 		}
 
@@ -96,21 +197,7 @@ abstract class Geometry
 				return FALSE;
 			}
 		}
-
 		// All points match, return TRUE
-		return TRUE;
-	}
-
-	public function isSimple() {
-		if ($this->geos()) {
-			return $this->geos()->isSimple();
-		}
-
-		// A collection is simple if all it's components are simple
-		foreach ($this->components as $component) {
-			if (!$component->isSimple()) return FALSE;
-		}
-
 		return TRUE;
 	}
 
@@ -152,9 +239,6 @@ abstract class Geometry
 		}
 		return $distance;
 	}
-
-	// A Geometry is empty if it has no components OR all it's components are empty
-	abstract public function isEmpty();
 	
 	public function getBBox() {
 		if ($this->isEmpty()) return NULL;
@@ -203,52 +287,14 @@ abstract class Geometry
 		);
 	}
 
-	public function asArray() {
-		$array = array();
-		foreach ($this->components as $component) {
-			$array[] = $component->asArray();
-		}
-		return $array;
-	}
-	
+
 	// Public: Standard -- Common to all geometries
 	// --------------------------------------------
-	public function SRID() {
-		return $this->srid;
-	}
-
 	public function setSRID($srid) {
 		if ($this->geos()) {
 			$this->geos()->setSRID($srid);
 		}
 		$this->srid = $srid;
-	}
-
-	/**
-	 * @return Polygon
-	 */
-	public function envelope() {
-		if ($this->isEmpty()) return new Polygon();
-
-		if ($this->geos()) {
-			return geoPHP::geosToGeometry($this->geos()->envelope());
-		}
-
-		$bbox = $this->getBBox();
-		$points = array (
-				new Point($bbox['maxx'],$bbox['miny']),
-				new Point($bbox['maxx'],$bbox['maxy']),
-				new Point($bbox['minx'],$bbox['maxy']),
-				new Point($bbox['minx'],$bbox['miny']),
-				new Point($bbox['maxx'],$bbox['miny']),
-		);
-
-		$outer_boundary = new LineString($points);
-		return new Polygon(array($outer_boundary));
-	}
-
-	public function geometryType() {
-		return $this->geom_type;
 	}
 
 	public function coordinateDimension() {
@@ -266,6 +312,7 @@ abstract class Geometry
 			return TRUE;
 		}
 	}
+	
 	/**
 	 * set geometry have 3d value
 	 *
@@ -296,6 +343,16 @@ abstract class Geometry
 	// Public: Non-Standard -- Common to all geometries
 	// ------------------------------------------------
 
+	/**
+	 * Returns Collection component geometries
+	 *
+	 * @deprecated will be set protected
+	 * @return array
+	 */
+	public function getComponents() {
+		return $this->components;
+	}
+
 	// $this->out($format, $other_args);
 	public function out() {
 		$args = func_get_args();
@@ -311,37 +368,18 @@ abstract class Geometry
 		return $result;
 	}
 
-
-	// Public: Aliases
-	// ---------------
-	public function getCentroid() {
-		return $this->centroid();
-	}
-
-	public function getArea() {
-		return $this->area();
-	}
-
-	public function getGeos() {
-		return $this->geos();
-	}
-
-	public function getGeomType() {
+	/**
+	 * @deprecated 
+		public function geometryType() {
 		return $this->geometryType();
-	}
+	} */
 
 	public function getSRID() {
 		return $this->SRID();
 	}
 
-	public function asText() {
-		return $this->out('wkt');
-	}
-
-	public function asBinary() {
-		return $this->out('wkb');
-	}
-
+	
+	
 	public function is3D() {
 		return $this->hasZ();
 	}
@@ -362,6 +400,10 @@ abstract class Geometry
 			$this->geos = FALSE;
 		}
 		return $this->geos;
+	}
+	
+	public function getGeos() {
+		return $this->geos();
 	}
 
 	public function setGeos($geos) {
@@ -517,7 +559,7 @@ abstract class Geometry
 
 
 	// bad methods
-
+/*
 
 	public function length() {
 		$length = 0;
@@ -534,15 +576,7 @@ abstract class Geometry
 		}
 		return $length;
 	}
+*/
 
-	public function dimension() {
-		$dimension = $this->dimention;
-		foreach ($this->components as $component) {
-			if ($component->dimension() > $dimension) {
-				$dimension = $component->dimension();
-			}
-		}
-		return $dimension;
-	}
 
 }
