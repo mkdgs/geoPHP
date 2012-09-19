@@ -1,4 +1,5 @@
 <?php
+namespace geoPHP\Geometry\Geometry;
 
 /**
  * Geometry abstract class
@@ -40,8 +41,9 @@ abstract class Geometry
 	*/
 
 	/**
-	 * Dimension ( ):Integer — The inherent dimension of this geometric object, which must be less than or equal
-	 * to the coordinate dimension. This specification is restricted to geometries in 2-dimensional coordinate space.
+	 * Dimension ( ):Integer 
+	 * 	The inherent dimension of this geometric object, which must be less than or equal
+	 * 	to the coordinate dimension. This specification is restricted to geometries in 2-dimensional coordinate space.
 	 */
 	public function dimension() {
 		$dimension = $this->dimension;
@@ -54,24 +56,27 @@ abstract class Geometry
 	}
 
 	/**
-	 * GeometryType ( ):String — Returns the name of the instantiable subtype of Geometry of which this
-	 * geometric object is a instantiable member. The name of the subtype of Geometry is returned as a string.
+	 * GeometryType ( ):String 
+	 * 	Returns the name of the instantiable subtype of Geometry of which this
+	 * 	geometric object is a instantiable member. The name of the subtype of Geometry is returned as a string.
 	 */
 	public function geometryType() {
 		return $this->geom_type;
 	}
 
 	/**
-	 * SRID ( ):Integer — Returns the Spatial Reference System ID for this geometric object.
+	 * SRID ( ):Integer
+	 * 	Returns the Spatial Reference System ID for this geometric object.
 	 */
 	public function SRID() {
 		return $this->srid;
 	}
 
 	/**
-	 * Envelope( ):Geometry — The minimum bounding box for this Geometry, returned as a Geometry. The
-	 * polygon is defined by the corner points of the bounding box [(MINX, MINY), (MAXX, MINY), (MAXX, MAXY),
-	 * (MINX, MAXY), (MINX, MINY)].
+	 * Envelope( ):Geometry
+	 * 	The minimum bounding box for this Geometry, returned as a Geometry. The
+	 * 	polygon is defined by the corner points of the bounding box [(MINX, MINY), (MAXX, MINY), (MAXX, MAXY),
+	 * 	(MINX, MAXY), (MINX, MINY)].
 	 *
 	 * @return Polygon
 	 */
@@ -96,7 +101,7 @@ abstract class Geometry
 	}
 
 	/**
-	 * AsText( ):String —
+	 * AsText( ):String
 	 *  Exports this geometric object to a specific Well-known Text Representation of Geometry.
 	 */
 	public function asText() {
@@ -112,14 +117,14 @@ abstract class Geometry
 	}
 
 	/**
-	 * IsEmpty( ):Integer —
+	 * IsEmpty( ):Integer
 	 *  Returns 1 (TRUE) if this geometric object is the empty Geometry. If true, then this
 	 *  geometric object represents the empty point set, ∅, for the coordinate space.
 	 */
 	abstract public function isEmpty();
 
 	/**
-	 * IsSimple( ):Integer —
+	 * IsSimple( ):Integer
 	 * 	Returns 1 (TRUE) if this geometric object has no anomalous geometric points, such as
 	 * 	self intersection or self tangency. The description of each instantiable geometric class will include the specific
 	 * 	conditions that cause an instance of that class to be classified as not simple.
@@ -138,7 +143,7 @@ abstract class Geometry
 	}
 
 	/**
-	 * Boundary( ):Geometry —
+	 * Boundary( ):Geometry
 	 * Returns the closure of the combinatorial boundary of this geometric object
 	 * (Reference [1], section 3.12.2). Because the result of this function is a closure, and hence topologically
 	 * closed, the resulting boundary can be represented using representational Geometry primitives (Reference [1],
@@ -160,7 +165,7 @@ abstract class Geometry
 
 	
 
-	/*  ______________
+	/*  _______________
 	 *  RELATION METHOD
 	 */
 

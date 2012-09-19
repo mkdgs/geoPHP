@@ -1,4 +1,6 @@
 <?php
+namespace geoPHP;
+
 /*
  * (c) Patrick Hayes
  *
@@ -8,34 +10,34 @@
  */
 
 // Adapters
-include_once("lib/adapters/GeoAdapter.class.php"); // Abtract class
-include_once("lib/adapters/GeoJSON.class.php");
-include_once("lib/adapters/WKT.class.php");
-include_once("lib/adapters/EWKT.class.php");
-include_once("lib/adapters/WKB.class.php");
-include_once("lib/adapters/EWKB.class.php");
-include_once("lib/adapters/KML.class.php");
-include_once("lib/adapters/GPX.class.php");
-include_once("lib/adapters/GeoRSS.class.php");
-include_once("lib/adapters/GoogleGeocode.class.php");
-include_once("lib/adapters/GeoHash.class.php");
-include_once("lib/adapters/GML.class.php");
+include_once("geoPHP/Adapters/GeoAdapter.class.php"); // Abtract class
+include_once("geoPHP/Adapters/GeoJSON.class.php");
+include_once("geoPHP/Adapters/WKT.class.php");
+include_once("geoPHP/Adapters/EWKT.class.php");
+include_once("geoPHP/Adapters/WKB.class.php");
+include_once("geoPHP/Adapters/EWKB.class.php");
+include_once("geoPHP/Adapters/KML.class.php");
+include_once("geoPHP/Adapters/GPX.class.php");
+include_once("geoPHP/Adapters/GeoRSS.class.php");
+include_once("geoPHP/Adapters/GoogleGeocode.class.php");
+include_once("geoPHP/Adapters/GeoHash.class.php");
+include_once("geoPHP/Adapters/GML.class.php");
 
 // Geometries
-include_once("lib/geometry/Geometry.class.php"); // Abtract class
-include_once("lib/geometry/Surface.class.php");  // Abtract class
-include_once("lib/geometry/Curve.class.php"); // Abtract class
+include_once("geoPHP/Geometry/Geometry.class.php"); // Abtract class
+include_once("geoPHP/Geometry/Surface.class.php");  // Abtract class
+include_once("geoPHP/Geometry/Curve.class.php"); // Abtract class
 
-include_once("lib/geometry/Point.class.php");
-include_once("lib/geometry/Line.class.php");
-include_once("lib/geometry/LineString.class.php");
-include_once("lib/geometry/LinearRing.class.php");
-include_once("lib/geometry/Polygon.class.php");
+include_once("geoPHP/Geometry/Point.class.php");
+include_once("geoPHP/Geometry/Line.class.php");
+include_once("geoPHP/Geometry/LineString.class.php");
+include_once("geoPHP/Geometry/LinearRing.class.php");
+include_once("geoPHP/Geometry/Polygon.class.php");
 
-include_once("lib/geometry/GeometryCollection.class.php");
-include_once("lib/geometry/MultiPoint.class.php");
-include_once("lib/geometry/MultiLineString.class.php");
-include_once("lib/geometry/MultiPolygon.class.php");
+include_once("geoPHP/Geometry/GeometryCollection.class.php");
+include_once("geoPHP/Geometry/MultiPoint.class.php");
+include_once("geoPHP/Geometry/MultiLineString.class.php");
+include_once("geoPHP/Geometry/MultiPolygon.class.php");
 
 
 

@@ -1,4 +1,5 @@
 <?php
+namespace geoPHP\Geometry\LinearRing;
 /**
  * A LinearRing is a LineString that is both closed and simple. 
  * is a closed LineString that is a LinearRing.

@@ -133,13 +133,13 @@ foreach ($result as $item) {
 }
 ```
 
-
 Credit
 -------------------------------------------------
 
 Maintainer: Patrick Hayes
 
 This library was written entirely in my free time as a volunteer. If you find it really useful, please consider making a donation by [clicking here] (https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=geomemes%40gmail%2ecom&lc=US&item_name=Patrick%20Hayes%20-%20geoPHP&no_note=0&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHostedGuest).
+--> this sound like "This class can be very instable because i love BEER. Remember, i love BEER "
 
 Additional Contributors:
 
@@ -149,3 +149,7 @@ Additional Contributors:
  * Elliott Hunston (documentation) <https://github.com/ejh>
 
 This library is open-source and dual-licensed under both the Modified BSD License and GPLv2. Either license may be used at your option.           
+
+a way to go:
+- https://github.com/php-fig/fig-standards
+- Simple Feature Specification http://www.opengeospatial.org/standards/sfa

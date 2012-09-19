@@ -1,4 +1,5 @@
 <?php
+namespace geoPHP\Adapters\GPX;
 /*
  * Copyright (c) Patrick Hayes
  *

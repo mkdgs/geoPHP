@@ -1,5 +1,5 @@
 <?php
-
+namespace geoPHP\Geometry\Surface;
 /**
  * Collection: Abstract class for compound geometries
  *

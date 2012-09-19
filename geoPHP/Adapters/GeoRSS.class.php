@@ -1,4 +1,5 @@
 <?php
+namespace geoPHP\Adapters\GeoRSS;
 /*
  * Copyright (c) Patrick Hayes
  *

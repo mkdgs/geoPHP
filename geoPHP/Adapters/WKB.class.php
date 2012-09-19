@@ -1,4 +1,5 @@
 <?php
+namespace geoPHP\Adapters\WKB;
 /*
  * (c) Patrick Hayes
 *

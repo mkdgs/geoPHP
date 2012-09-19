@@ -1,4 +1,5 @@
 <?php
+namespace geoPHP\Adapters\WKT;
 /**
  * WKT (Well Known Text) Adapter
  */

@@ -1,4 +1,5 @@
 <?php
+namespace geoPHP\Adapters\GoogleGeocode;
 /*
  * Copyright (c) Patrick Hayes
  * Copyright (c) 2012 Desgranges Mickael

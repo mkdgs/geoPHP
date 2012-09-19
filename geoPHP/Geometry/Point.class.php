@@ -1,5 +1,5 @@
 <?php
-
+namespace geoPHP\Geometry\Point;
 /**
  * Point: The most basic geometry type. All other geometries
  * are built out of Points.
@@ -153,7 +153,7 @@ class Point extends Geometry
   }
 
   public function flatten() {
-    if ( $this->hasZ() ) return new Point($this->x(), $this->y());
+    if ( $this->hasZ() || $this->isMeasured() ) return new Point($this->x(), $this->y());
     return $this;
   }
 
