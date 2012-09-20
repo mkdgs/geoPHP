@@ -1,5 +1,4 @@
-<?php
-namespace geoPHP\Geometry\Line;
+<?php 
 /**
  * A Line is a LineString with exactly 2 Points.
 

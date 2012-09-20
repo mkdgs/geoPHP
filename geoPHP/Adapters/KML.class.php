@@ -1,5 +1,4 @@
-<?php
-namespace geoPHP\Adapters\KML;
+<?php 
 /*
  * Copyright (c) Patrick Hayes
  * Copyright (c) 2010-2011, Arnaud Renevier

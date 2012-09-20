@@ -1,4 +1,4 @@
-<?php
+<?php 
 require_once('../geoPHP.inc');
 require_once('PHPUnit/Autoload.php');
 
@@ -61,7 +61,7 @@ class MethodsTests extends PHPUnit_Framework_TestCase {
   function _methods_tester($geometry, $method_name, $argument) {
 
     if (!method_exists($geometry, $method_name)) {
-      $this->fail("Method ".$method_name.'() doesn\'t exists.');
+      $this->fail("Method ".$method_name.'() 't exists.');
       return;
     }
 
@@ -290,7 +290,7 @@ class MethodsTests extends PHPUnit_Framework_TestCase {
 
   function _methods_tester_with_geos($geometry) {
     // Cannot test methods if GEOS is not intstalled
-    if (!geoPHP::geosInstalled()) return;
+    if ( geoPHP::geosInstalled()) return;
 
     $methods = array(
       //'boundary', //@@TODO: Uncomment this and fix errors
@@ -329,7 +329,7 @@ class MethodsTests extends PHPUnit_Framework_TestCase {
 
       // Now check base on type
       if ($geos_type == 'object') {
-        $haus_dist = $geos_result->hausdorffDistance(geoPHP::load($norm_result->out('wkt'),'wkt'));
+        $haus_dist = $geos_result->hausdorffDistance geoPHP::load($norm_result->out('wkt'),'wkt'));
 
         // Get the length of the diagonal of the bbox - this is used to scale the haustorff distance
         // Using Pythagorean theorem

@@ -1,5 +1,4 @@
-<?php
-namespace geoPHP\Adapters\GeoJSON;
+<?php 
 /**
  * GeoJSON class : a geojson reader/writer.
  *
@@ -45,10 +44,8 @@ class GeoJSON extends GeoAdapter
     return $this->objToGeom($input);
   }
 
-  private function objToGeom($obj) {
-  
-    $type = $obj->type;
-
+  private function objToGeom($obj) {  
+   $type = $obj->type;
     if ($type == 'GeometryCollection') {
       return $this->objToGeometryCollection($obj);
     }
@@ -120,7 +117,8 @@ class GeoJSON extends GeoAdapter
    *
    * @return string The GeoJSON string
    */
-  public function write(Geometry $geometry, $return_array = FALSE) {
+  public function write(Geometry $geometry) {
+  	$return_array = FALSE; // fix Declaration compatibility
     if ($return_array) {
       return $this->getArray($geometry);
     }
@@ -180,7 +178,7 @@ class GeoJSON extends GeoAdapter
 
   	  
   	  if ( $geometry instanceof GeometryCollection ) {
-  	  	if ( get_class($geometry) != 'GeometryCollection' ) {
+  	  	if ( is_subclass_of($geometry, 'GeometryCollection') ) {
   	  		$coords = array();
   	  		$num = $geometry->numGeometries();
   	  		for ($i=1; $i<=$num; $i++) {

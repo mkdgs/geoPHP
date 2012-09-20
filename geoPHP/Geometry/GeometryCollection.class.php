@@ -1,5 +1,4 @@
-<?php
-namespace geoPHP\Geometry\GeometryCollection;
+<?php 
 /**
  * GeometryCollection: A heterogenous collection of geometries  
  */

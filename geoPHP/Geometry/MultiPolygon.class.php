@@ -1,5 +1,4 @@
-<?php
-namespace geoPHP\Geometry\MultiPolygon;
+<?php 
 /**
  * MultiPolygon: A collection of Polygons
  */

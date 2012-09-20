@@ -1,16 +1,7 @@
-<?php
+<?php 
 require_once 'test_comon.php';
 run_test();
 function run_test() {
-
-
-	if (geoPHP::geosInstalled()) {
-		print "GEOS is installed.\n";
-	}
-	else {
-		print "GEOS is not installed.\n";
-	}
-
 	foreach (scandir('./input') as $file) {
 		print '---- Testing '.$file."\n";
 		$parts = explode('.',$file);
@@ -129,10 +120,11 @@ function test_surface() {
 
 function test_adapters($geometry, $format, $input) {
 	// Test adapter output and input. Do a round-trip and re-test
-	foreach (geoPHP::getAdapterMap() as $adapter_key => $adapter_class) {
+	foreach ( geoPHP::getAdapterMap() as $adapter_key => $adapter_class) {
 		if ($adapter_key != 'google_geocode') { //Don't test google geocoder regularily. Uncomment to test
 			print '------ '.$format.' to '.$adapter_key."\n";
 			$output = $geometry->out($adapter_key);
+			$adapter_class = ''.$adapter_class;
 			if ($output) {
 				 
 				$adapter_loader = new $adapter_class();
@@ -148,30 +140,33 @@ function test_adapters($geometry, $format, $input) {
 			}
 		}
 	}
+}
 
-	// Test to make sure adapter work the same wether GEOS is ON or OFF
-	// Cannot test methods if GEOS is not intstalled
-	if (!geoPHP::geosInstalled()) return;
+// Test to make sure adapter work the same wether GEOS is ON or OFF
+// Cannot test methods if GEOS is not intstalled
+function test_geos_adaptaters() { 
 
-	foreach (geoPHP::getAdapterMap() as $adapter_key => $adapter_class) {
+	if ( geoPHP::geosInstalled()) return;
+	
+	foreach ( geoPHP::getAdapterMap() as $adapter_key => $adapter_class) {
 		if ($adapter_key != 'google_geocode') { //Don't test google geocoder regularily. Uncomment to test
 			// Turn GEOS on
 			geoPHP::geosInstalled(TRUE);
-
+	
 			$output = $geometry->out($adapter_key);
 			if ($output) {
 				$adapter_loader = new $adapter_class();
-
+	
 				$test_geom_1 = $adapter_loader->read($output);
-
+	
 				// Turn GEOS off
 				geoPHP::geosInstalled(FALSE);
-
+	
 				$test_geom_2 = $adapter_loader->read($output);
-
+	
 				// Turn GEOS back On
 				geoPHP::geosInstalled(TRUE);
-
+	
 				// Check to make sure a both are the same with geos and without
 				if ($test_geom_1->out('wkt') != $test_geom_2->out('wkt')) {
 					print "Mismatched adapter output between GEOS and NORM in ".$adapter_class."\n";
@@ -184,7 +179,7 @@ function test_adapters($geometry, $format, $input) {
 
 function test_methods($geometry) {
 	// Cannot test methods if GEOS is not intstalled
-	if (!geoPHP::geosInstalled()) return;
+	if ( geoPHP::geosInstalled()) return;
 
 	$methods = array(
 			//'boundary', //@@TODO: Uncomment this and fix errors
@@ -201,15 +196,15 @@ function test_methods($geometry) {
 
 	foreach ($methods as $method) {
 		// Turn GEOS on
-		geoPHP::geosInstalled(TRUE);
+	 geoPHP::geosInstalled(TRUE);
 		$geos_result = $geometry->$method();
 
 		// Turn GEOS off
-		geoPHP::geosInstalled(FALSE);
+	 geoPHP::geosInstalled(FALSE);
 		$norm_result = $geometry->$method();
 
 		// Turn GEOS back On
-		geoPHP::geosInstalled(TRUE);
+	 geoPHP::geosInstalled(TRUE);
 
 		$geos_type = gettype($geos_result);
 		$norm_type = gettype($norm_result);
@@ -255,8 +250,8 @@ function test_detection($value, $format, $file) {
 	$detected = geoPHP::detectFormat($value);
 	if ($detected != $format) {
 		if ($detected) print 'detected as ' . $detected . "\n";
-		else print "not detected\n";
+		else print "not \n";
 	}
 	// Make sure it loads using auto-detect
-	geoPHP::load($value);
+ geoPHP::load($value);
 }

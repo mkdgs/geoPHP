@@ -1,5 +1,4 @@
-<?php
-namespace geoPHP\Adapters\GoogleGeocode;
+<?php 
 /*
  * (c) Camptocamp <info@camptocamp.com>
  * (c) Patrick Hayes

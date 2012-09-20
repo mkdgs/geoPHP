@@ -1,5 +1,4 @@
-<?php
-namespace geoPHP\Adapters\GeoAdapter;
+<?php 
 /*
  * (c) Patrick Hayes 2011
  *
@@ -27,6 +26,6 @@ abstract class GeoAdapter
    * 
    * @return mixed
    */
-  abstract public function write(Geometry $geometry);
+   abstract public function write(Geometry $geometry);
   
 }

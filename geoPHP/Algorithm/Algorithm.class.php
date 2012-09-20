@@ -1,5 +1,4 @@
-<?php
-namespace geoPHP\Algorithm\Algorithm;
+<?php 
 class Algorithm {
 	
 	//meters

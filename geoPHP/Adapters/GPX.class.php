@@ -1,5 +1,4 @@
-<?php
-namespace geoPHP\Adapters\GPX;
+<?php 
 /*
  * Copyright (c) Patrick Hayes
  *
@@ -35,7 +34,8 @@ class GPX extends GeoAdapter
    *
    * @return string The GPX string representation of the input geometries
    */
-  public function write(Geometry $geometry, $namespace = FALSE) {
+  public function write(Geometry $geometry) {  	
+  	$namespace = FALSE;// fix Declaration compatibility
     if ($geometry->isEmpty()) return NULL;
     if ($namespace) {
       $this->namespace = $namespace;

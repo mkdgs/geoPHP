@@ -1,6 +1,4 @@
-<?php
-namespace geoPHP\Geometry\Curve;
-
+<?php 
 abstract class Curve extends Geometry {
 	protected $geom_type = 'Curve';
 	

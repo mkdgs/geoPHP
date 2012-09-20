@@ -1,6 +1,4 @@
-<?php
-namespace geoPHP\Adapters\EWKT;
-
+<?php 
 /**
  * EWKT (Extended Well Known Text) Adapter
  */

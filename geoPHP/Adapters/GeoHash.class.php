@@ -1,5 +1,4 @@
-<?php
-namespace geoPHP\Adapters\GeoHash;
+<?php 
 /**
  * PHP Geometry GeoHash encoder/decoder.
  *

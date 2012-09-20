@@ -1,5 +1,4 @@
-<?php
-namespace geoPHP\Adapters\WKB;
+<?php 
 /*
  * (c) Patrick Hayes
 *
@@ -309,7 +308,7 @@ class WKB extends GeoAdapter {
 		}
 	}
 
-	protected function writePoint($point) {		
+	protected function writePoint(Point $point) {		
 		$this->write_double($point->x());
 		$this->write_double($point->y());
 		if( $this->writeGeometry->hasZ() ) {

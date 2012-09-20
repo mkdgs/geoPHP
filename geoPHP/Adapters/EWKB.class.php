@@ -1,5 +1,4 @@
-<?php
-namespace geoPHP\Adapters\EWKB;
+<?php 
 /**
  * EWKB (Extended Well Known Binary) Adapter
  * 

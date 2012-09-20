@@ -1,4 +1,4 @@
-<?php
+<?php 
 require_once('../geoPHP.inc');
 require_once('PHPUnit/Autoload.php');
 

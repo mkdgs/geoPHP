@@ -1,6 +1,4 @@
-<?php
-namespace geoPHP\Geometry\Geometry;
-
+<?php 
 /**
  * Geometry abstract class
  */
@@ -364,7 +362,7 @@ abstract class Geometry
 
 		$format = array_shift($args);
 		$type_map = geoPHP::getAdapterMap();
-		$processor_type = $type_map[$format];
+		$processor_type = ''.$type_map[$format];
 		$processor = new $processor_type();
 
 		array_unshift($args, $this);
