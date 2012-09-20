@@ -17,7 +17,7 @@ class AdaptersTests extends PHPUnit_Framework_TestCase {
         $geometry = geoPHP::load($input, $format);
 
         // Test adapter output and input. Do a round-trip and re-test
-        foreach  geoPHP::getAdapterMap() as $adapter_key => $adapter_class) {
+        foreach  ( geoPHP::getAdapterMap() as $adapter_key => $adapter_class) {
           if ($adapter_key != 'google_geocode') { //Don't test google geocoder regularily. Uncomment to test
             $output = $geometry->out($adapter_key);
             $this->assertNotNull($output, "Empty output on "  . $adapter_key);
@@ -32,9 +32,9 @@ class AdaptersTests extends PHPUnit_Framework_TestCase {
 
         // Test to make sure adapter work the same wether GEOS is ON or OFF
         // Cannot test methods if GEOS is not intstalled
-        if ( geoPHP::geosInstalled()) return;
+        if ( !geoPHP::geosInstalled()) return;
 
-        foreach  geoPHP::getAdapterMap() as $adapter_key => $adapter_class) {
+        foreach ( geoPHP::getAdapterMap() as $adapter_key => $adapter_class) {
           if ($adapter_key != 'google_geocode') { //Don't test google geocoder regularily. Uncomment to test
             // Turn GEOS on
             geoPHP::geosInstalled(TRUE);

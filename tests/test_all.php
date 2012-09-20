@@ -146,7 +146,7 @@ function test_adapters($geometry, $format, $input) {
 // Cannot test methods if GEOS is not intstalled
 function test_geos_adaptaters() { 
 
-	if ( geoPHP::geosInstalled()) return;
+	if ( !geoPHP::geosInstalled()) return;
 	
 	foreach ( geoPHP::getAdapterMap() as $adapter_key => $adapter_class) {
 		if ($adapter_key != 'google_geocode') { //Don't test google geocoder regularily. Uncomment to test
@@ -250,7 +250,7 @@ function test_detection($value, $format, $file) {
 	$detected = geoPHP::detectFormat($value);
 	if ($detected != $format) {
 		if ($detected) print 'detected as ' . $detected . "\n";
-		else print "not \n";
+		else print "not detected \n";
 	}
 	// Make sure it loads using auto-detect
  geoPHP::load($value);

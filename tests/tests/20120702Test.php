@@ -53,7 +53,7 @@ class Tests_20120702 extends PHPUnit_Framework_TestCase {
   function _methods_tester($geometry, $method_name, $argument) {
 
     if (!method_exists($geometry, $method_name)) {
-      $this->fail("Method ".$method_name.'() 't exists.');
+      $this->fail("Method ".$method_name.'() doesn\'t exists.');
       return;
     }
 

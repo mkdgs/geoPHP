@@ -30,7 +30,7 @@ function run_test() {
       $name = $parts[0];
       $format = $parts[1];
       $value = file_get_contents('./input/'.$file);
-      print '---- Testing '.$file."n";
+      print '---- Testing '.$file."\n";
       flush();
       $geometry = geoPHP::load($value, $format);
       test_postgis($name, $format, $geometry, $connection, 'wkb');
