@@ -107,8 +107,9 @@ class Polygon extends Surface
   }
 
   public function interiorRingN($n) {
-  	if ( array_key_exists($n+1, $this->components) ) {
-  	  return $this->components[$n+1];
+  	// 0 is exterior
+  	if ( array_key_exists($n, $this->components) ) {
+  	  return $this->components[$n];
   	}
   	return null;
   }

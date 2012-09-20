@@ -167,7 +167,7 @@ class GeoJSON extends GeoAdapter
   	  	$coords = array();
   	  	$coords[] = $this->coordsCurve($geometry->exteriorRing());
   	  	$num = $geometry->numInteriorRings();
-  	  	for ($i=0; $i<$num; $i++) { 
+  	  	for ($i=1; $i<=$num; $i++) { 
   	  		$coords[] = $this->coordsCurve($geometry->interiorRingN($i));
   	  	}
   	  	return array(

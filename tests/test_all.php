@@ -119,6 +119,14 @@ function test_surface() {
 }
 
 function test_adapters($geometry, $format, $input) {
+
+	/* gml write only
+	$gml = new GML();
+	$geometry = geoPHP::load($input);
+	print "--------- write gml \n";
+	$gml->write($geometry);
+	return;*/
+	
 	// Test adapter output and input. Do a round-trip and re-test
 	foreach ( geoPHP::getAdapterMap() as $adapter_key => $adapter_class) {
 		if ($adapter_key != 'google_geocode') { //Don't test google geocoder regularily. Uncomment to test
@@ -138,7 +146,7 @@ function test_adapters($geometry, $format, $input) {
 			else {
 				print "Empty output on "  . $adapter_key . "\n";
 			}
-		}
+		}			
 	}
 }
 

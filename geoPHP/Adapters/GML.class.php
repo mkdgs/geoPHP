@@ -183,30 +183,7 @@ class GML extends GeoAdapter {
 		libxml_use_internal_errors(true);
 		$xmlobj = new DOMDocument('1.0', 'UTF-8');
 			
-		$type = strtolower($geom->geometryType());
-		switch ($type) {
-			case 'point':
-				$this->writePoint($geom, $xmlobj);
-				break;
-			case 'linestring':
-				$this->writeLineString($geom, $xmlobj);
-				break;
-			case 'polygon':
-				$this->writePolygon($geom, $xmlobj);
-				break;
-			case 'multipoint':
-				$this->writeMultipoint($geom, $xmlobj);
-				break;
-			case 'multilinestring':
-				$this->writeMultiLineString($geom, $xmlobj);
-				break;
-			case 'multipolygon':
-				$this->writeMultiPolygon($geom, $xmlobj);
-				break;
-			case 'geometrycollection':
-				$this->writeMultiGeometry($geom, $xmlobj);
-				break;
-		}
+		$this->writeGeometry($geom, $xmlobj);
 		// add on first srsName="$this->"
 		// we need namespace, always
 		// $element = $xmlobj->createElement('shema');
@@ -217,6 +194,34 @@ class GML extends GeoAdapter {
 	protected function ownerDocument(DOMNode $node) { 
 		if ( $node->ownerDocument ) return $node->ownerDocument;
 		return $node;
+	}
+	
+	protected function writeGeometry(Geometry $geom, DOMNode $node) {
+		$type = strtolower($geom->geometryType());
+		switch ($type) {
+			case 'point':
+				$geometry = $this->writePoint($geom, $node);
+				break;
+			case 'linestring':
+				$geometry = $this->writeLineString($geom, $node);
+				break;
+			case 'polygon':
+				$geometry = $this->writePolygon($geom, $node);
+				break;
+			case 'multipoint':
+				$geometry = $this->writeMultipoint($geom, $node);
+				break;
+			case 'multilinestring':
+				$geometry = $this->writeMultiLineString($geom, $node);
+				break;
+			case 'multipolygon':
+				$geometry = $this->writeMultiPolygon($geom, $node);
+				break;
+			case 'geometrycollection':
+				$geometry = $this->writeMultiGeometry($geom, $node);
+				break;
+		}
+		return $geometry;
 	}
 	
 	// pos must be direct position (lat long for wsg84)
@@ -279,7 +284,7 @@ class GML extends GeoAdapter {
 		
 		$num_interior_rings = $geom->numInteriorRings();
 		if ( $num_interior_rings ) {			
-			for ( $i=0; $i<$num_interior_rings; $i++) {
+			for ( $i=1; $i<=$num_interior_rings; $i++) {
 				$interior  = $this->ownerDocument($node)->createElement($this->namespace. ':interior');
 				$polygon->appendChild($this->writeLinearRing($geom->interiorRingN($i), $interior));
 			}
@@ -292,7 +297,7 @@ class GML extends GeoAdapter {
 		$multipoint   = $this->ownerDocument($node)->createElement($this->namespace. ':MultiPoint');			
 		$num_points = $geom->numGeometries();
 		if ( $num_points ) {
-			for ( $i=0; $i<$num_points; $i++) {
+			for ( $i=1; $i<=$num_points; $i++) {
 				$pointMember   = $this->ownerDocument($node)->createElement($this->namespace. ':pointMember');
 				$multipoint->appendChild($this->writePoint($geom->geometryN($i), $pointMember));
 			}
@@ -304,9 +309,9 @@ class GML extends GeoAdapter {
 		$multicurve   = $this->ownerDocument($node)->createElement($this->namespace. ':MultiCurve');
 		$num_curves = $geom->numGeometries();
 		if ( $num_curves ) {
-			for ( $i=0; $i<$num_curves; $i++) {
+			for ( $i=1; $i<=$num_curves; $i++) {
 				$curveMember   = $this->ownerDocument($node)->createElement($this->namespace. ':curveMember');
-				$multicurve->appendChild($this->writePoint($geom->geometryN($i), $curveMember));
+				$multicurve->appendChild($this->writeLineString($geom->geometryN($i), $curveMember));
 			}
 		}
 		return $multicurve;
@@ -316,21 +321,21 @@ class GML extends GeoAdapter {
 		$multipolygon   = $this->ownerDocument($node)->createElement($this->namespace. ':MultiPolygon');
 		$num_polygons = $geom->numGeometries();
 		if ( $num_polygons ) {
-			for ( $i=0; $i<$num_polygons; $i++) {
+			for ( $i=1; $i<=$num_polygons; $i++) {
 				$polygonMember   = $this->ownerDocument($node)->createElement($this->namespace. ':polygonMember');
-				$multipolygon->appendChild($this->writePoint($geom->geometryN($i), $polygonMember));
+				$multipolygon->appendChild($this->writePolygon($geom->geometryN($i), $polygonMember));
 			}
 		}
 		return $multipolygon;
 	}
 	
-	protected function writeMultiGeometry(Collection $geom, DOMNode $node) { 
+	protected function writeMultiGeometry(GeometryCollection $geom, DOMNode $node) { 
 		$multiGeometry   = $this->ownerDocument($node)->createElement($this->namespace. ':MultiGeometry');
 		$num_geometry = $geom->numGeometries();
 		if ( $num_geometry ) {
-			for ( $i=0; $i<$num_geometry; $i++) {
+			for ( $i=1; $i<=$num_geometry; $i++) {
 				$geometryMember   = $this->ownerDocument($node)->createElement($this->namespace. ':geometryMember');
-				$multiGeometry->appendChild($this->writePoint($geom->geometryN($i), $geometryMember));
+				$multiGeometry->appendChild($this->writeGeometry($geom->geometryN($i), $geometryMember));
 			}
 		}
 		return $multiGeometry;
